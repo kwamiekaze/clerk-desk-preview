@@ -1,4 +1,5 @@
 import { Gauge } from "lucide-react";
+import { formatCP } from "@/lib/format";
 
 /** Estimated range badge — shown before generation. Server is authoritative. */
 export function EstimateBadge({
@@ -21,16 +22,16 @@ export function EstimateBadge({
       </div>
       {finalCharge != null ? (
         <div className="text-foreground">
-          <span className="text-lg font-semibold tracking-tight">{finalCharge}</span>
+          <span className="text-lg font-semibold tracking-tight">{formatCP(finalCharge)}</span>
           <span className="ml-1 text-mute">CP final</span>
         </div>
       ) : (
         <div className="text-foreground">
-          <span className="text-lg font-semibold tracking-tight">{min}–{max}</span>
+          <span className="text-lg font-semibold tracking-tight">{formatCP(min)}–{formatCP(max)}</span>
           <span className="ml-1 text-mute">CP</span>
           {budget != null && (
             <span className={`ml-2 ${overBudget ? "text-destructive" : "text-mute"}`}>
-              · budget {budget}
+              · budget {formatCP(budget)}
             </span>
           )}
         </div>
@@ -38,3 +39,4 @@ export function EstimateBadge({
     </div>
   );
 }
+

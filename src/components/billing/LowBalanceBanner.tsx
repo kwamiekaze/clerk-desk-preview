@@ -1,8 +1,10 @@
 import { AlertTriangle, Zap } from "lucide-react";
+import { formatCP } from "@/lib/format";
+
 
 export function LowBalanceBanner({
   available,
-  threshold = 10,
+  threshold = 2,
   onTopUp,
 }: {
   available: number;
@@ -10,7 +12,7 @@ export function LowBalanceBanner({
   onTopUp: () => void;
 }) {
   if (available > threshold) return null;
-  const insufficient = available <= 0;
+  const insufficient = available < 0.5;
 
   return (
     <div
@@ -29,7 +31,7 @@ export function LowBalanceBanner({
           <p className="mt-0.5 text-xs text-mute">
             {insufficient
               ? "New generations are paused until you top up or upgrade. In-flight work won't be charged on provider failures."
-              : `You have ${available} CP left. Top up to keep the clerks dispatching without interruption.`}
+              : `You have ${formatCP(available)} CP left. Top up to keep the clerks dispatching without interruption.`}
           </p>
         </div>
       </div>

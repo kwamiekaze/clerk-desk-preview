@@ -167,21 +167,29 @@ export type ReceiptLine = {
   kind: ReceiptLineKind;
   label: string;
   detail?: string;
-  points: number;            // can be negative for discounts
+  points: number;            // fractional (0.1 step); negative for discounts/refunds
 };
+
+export type ReceiptStatus = "completed" | "partial" | "failed" | "refunded";
 
 export type UsageReceipt = {
   id: string;
+  messageId?: string;
   projectId: string;
   projectName: string;
   clerk: "intake" | "crawler" | "designer" | "engineer" | "qa" | "preview" | "deploy";
-  modelRoute: "automatic" | "fast" | "recommended" | "premium";
+  modelRoute: "automatic" | "fast" | "recommended" | "premium" | "standard";
+  modelRouteLabel: "Automatic" | "Standard" | "Premium";
   taskType: "scaffold" | "edit" | "repair" | "crawl" | "deploy" | "preview" | "qa";
+  taskTypeLabel: string;            // user-facing, e.g. "Edit text", "Build landing page"
   member: { id: string; name: string };
   estimatedRange: { min: number; max: number };
   estimatedAt: string;
-  finalCharge: number;       // 0 if provider failed
-  status: "charged" | "provider_failed" | "refunded";
+  finalCharge: number;              // fractional 0.1 step; 0 if provider failed / cancelled
+  status: ReceiptStatus;
+  firecrawlUsed: boolean;
+  validationCompleted: boolean;
+  durationMs: number;
   lines: ReceiptLine[];
   at: string;
 };
@@ -189,6 +197,7 @@ export type UsageReceipt = {
 export type PointLedgerEntry =
   | { kind: "grant"; id: string; at: string; grant: PointGrant }
   | { kind: "charge"; id: string; at: string; receipt: UsageReceipt; deductedFrom: PointBucket[] }
+  | { kind: "refund"; id: string; at: string; receipt: UsageReceipt; bucket: PointBucket; amount: number; reason: string }
   | { kind: "expiry"; id: string; at: string; bucket: PointBucket; amount: number; reason: string };
 
 /* --- Usage --------------------------------------------------------------- */
@@ -237,77 +246,115 @@ const subscription: SubscriptionStatus = {
 };
 
 const balance: PointBalance = {
-  total: 42,
-  byBucket: { daily: 3, promotional: 5, monthly: 22, rollover: 8, purchased: 4 },
+  total: 12.4,
+  byBucket: { daily: 3.0, promotional: 1.5, monthly: 5.4, rollover: 1.5, purchased: 1.0 },
   dailyResetAt: iso(days(1)),
   monthlyResetAt: iso(days(18)),
-  dailyUsedThisMonth: 22,
+  dailyUsedThisMonth: 14,
   dailyCapThisMonth: 60,
 };
 
 const receipts: UsageReceipt[] = [
   {
     id: "rcp_001",
+    messageId: "msg_helio_42",
     projectId: "p_helio",
     projectName: "Helio Marketing",
     clerk: "engineer",
     modelRoute: "recommended",
+    modelRouteLabel: "Standard",
     taskType: "scaffold",
+    taskTypeLabel: "Build landing page with theme",
     member: { id: "u_1", name: "Avery Vance" },
-    estimatedRange: { min: 8, max: 14 },
+    estimatedRange: { min: 2.0, max: 3.0 },
     estimatedAt: iso(days(-1)),
-    finalCharge: 11,
-    status: "charged",
+    finalCharge: 2.4,
+    status: "completed",
+    firecrawlUsed: false,
+    validationCompleted: true,
+    durationMs: 38_000,
     lines: [
-      { kind: "input_tokens", label: "Input tokens", detail: "12.4k tokens", points: 3 },
-      { kind: "output_tokens", label: "Output tokens", detail: "8.1k tokens", points: 5 },
-      { kind: "tool_call", label: "Tool calls", detail: "14 fs.write, 6 fs.read", points: 2 },
-      { kind: "sandbox", label: "Sandbox time", detail: "38s", points: 1 },
+      { kind: "tool_call", label: "Plan + scaffold", points: 0.9 },
+      { kind: "output_tokens", label: "Component generation", points: 1.0 },
+      { kind: "sandbox", label: "Preview build", detail: "38s", points: 0.5 },
     ],
     at: iso(days(-1)),
   },
   {
     id: "rcp_002",
+    messageId: "msg_arc_19",
     projectId: "p_arc",
     projectName: "Arc Portfolio",
     clerk: "crawler",
     modelRoute: "fast",
+    modelRouteLabel: "Standard",
     taskType: "crawl",
+    taskTypeLabel: "Clone from URL",
     member: { id: "u_2", name: "Sasha Patel" },
-    estimatedRange: { min: 5, max: 9 },
+    estimatedRange: { min: 1.5, max: 2.5 },
     estimatedAt: iso(days(-2)),
     finalCharge: 0,
-    status: "provider_failed",
+    status: "failed",
+    firecrawlUsed: true,
+    validationCompleted: false,
+    durationMs: 4_200,
     lines: [
-      { kind: "crawl", label: "Firecrawl request", detail: "Provider 503, no AI charge", points: 0 },
+      { kind: "crawl", label: "Firecrawl request", detail: "Provider 503 — no AI charge", points: 0 },
     ],
     at: iso(days(-2)),
   },
   {
     id: "rcp_003",
+    messageId: "msg_helio_44",
     projectId: "p_helio",
     projectName: "Helio Marketing",
-    clerk: "deploy",
+    clerk: "engineer",
     modelRoute: "premium",
-    taskType: "deploy",
+    modelRouteLabel: "Premium",
+    taskType: "edit",
+    taskTypeLabel: "Change button color",
     member: { id: "u_1", name: "Avery Vance" },
-    estimatedRange: { min: 6, max: 10 },
+    estimatedRange: { min: 0.4, max: 0.7 },
     estimatedAt: iso(days(-3)),
-    finalCharge: 8,
-    status: "charged",
+    finalCharge: 0.5,
+    status: "completed",
+    firecrawlUsed: false,
+    validationCompleted: true,
+    durationMs: 6_800,
     lines: [
-      { kind: "deploy", label: "Vercel deployment", detail: "build 42s", points: 6 },
-      { kind: "output_tokens", label: "Release notes", points: 3 },
-      { kind: "discount", label: "Promo: launch week", points: -1 },
+      { kind: "output_tokens", label: "Token edit", points: 0.5 },
     ],
     at: iso(days(-3)),
+  },
+  {
+    id: "rcp_004",
+    messageId: "msg_helio_45",
+    projectId: "p_helio",
+    projectName: "Helio Marketing",
+    clerk: "engineer",
+    modelRoute: "recommended",
+    modelRouteLabel: "Standard",
+    taskType: "edit",
+    taskTypeLabel: "Add testimonial section",
+    member: { id: "u_1", name: "Avery Vance" },
+    estimatedRange: { min: 0.8, max: 1.4 },
+    estimatedAt: iso(days(-4)),
+    finalCharge: 0.7,
+    status: "partial",
+    firecrawlUsed: false,
+    validationCompleted: true,
+    durationMs: 18_400,
+    lines: [
+      { kind: "output_tokens", label: "Partial result — section drafted, copy pending", points: 0.7 },
+    ],
+    at: iso(days(-4)),
   },
 ];
 
 const grants: PointGrant[] = [
   { id: "g_001", bucket: "monthly", amount: 40, grantedAt: iso(days(-12)), expiresAt: iso(days(18)), reason: "subscription_renewal" },
   { id: "g_002", bucket: "daily", amount: 5, grantedAt: iso(days(0)), expiresAt: iso(days(1)), reason: "daily_grant" },
-  { id: "g_003", bucket: "promotional", amount: 5, grantedAt: iso(days(-9)), expiresAt: iso(days(21)), reason: "promo_signup" },
+  { id: "g_003", bucket: "promotional", amount: 2, grantedAt: iso(days(-9)), expiresAt: iso(days(21)), reason: "promo_signup" },
 ];
 
 const ledger: PointLedgerEntry[] = [
@@ -316,7 +363,7 @@ const ledger: PointLedgerEntry[] = [
     kind: "charge", id: "le_" + r.id, at: r.at, receipt: r,
     deductedFrom: r.finalCharge === 0 ? [] : ["daily", "monthly"],
   })),
-  { kind: "expiry", id: "le_exp_1", at: iso(days(-5)), bucket: "daily", amount: 2, reason: "daily_unused" },
+  { kind: "expiry", id: "le_exp_1", at: iso(days(-5)), bucket: "daily", amount: 1.2, reason: "daily_unused" },
 ];
 
 const invoices: Invoice[] = [
@@ -326,9 +373,9 @@ const invoices: Invoice[] = [
 ];
 
 const members: Member[] = [
-  { id: "u_1", name: "Avery Vance", email: "avery@nightowl.studio", role: "Owner", monthlyLimit: null, usedThisMonth: 32 },
-  { id: "u_2", name: "Sasha Patel", email: "sasha@nightowl.studio", role: "Admin", monthlyLimit: 80, usedThisMonth: 41 },
-  { id: "u_3", name: "Kai Nguyen", email: "kai@nightowl.studio", role: "Member", monthlyLimit: 40, usedThisMonth: 38 },
+  { id: "u_1", name: "Avery Vance", email: "avery@nightowl.studio", role: "Owner", monthlyLimit: null, usedThisMonth: 8.2 },
+  { id: "u_2", name: "Sasha Patel", email: "sasha@nightowl.studio", role: "Admin", monthlyLimit: 20, usedThisMonth: 12.1 },
+  { id: "u_3", name: "Kai Nguyen", email: "kai@nightowl.studio", role: "Member", monthlyLimit: 10, usedThisMonth: 7.5 },
 ];
 
 /* ===================== API ===================== */
@@ -400,6 +447,67 @@ export const billingApi = {
   async resumeSubscription(): Promise<SubscriptionStatus> {
     await wait();
     return { ...subscription, cancelAtPeriodEnd: false };
+  },
+
+  /* ---- Server-contract aliases (match spec naming) -------------------- */
+  /** POST /api/billing/checkout — server creates Stripe Checkout Session. */
+  createCheckoutSession(planId: PlanId, cadence: Cadence = "monthly") { return this.startCheckout(planId, cadence); },
+  /** POST /api/billing/topup — server creates one-time payment Session. */
+  createTopupCheckoutSession(packageId: TopUp["id"]) { return this.startTopup(packageId); },
+  /** POST /api/billing/portal — Stripe Customer Portal. */
+  createCustomerPortalSession() { return this.openCustomerPortal(); },
+  /** GET /api/billing/points */
+  getPointBalance() { return this.getBalance(); },
+  /** GET /api/billing/ledger */
+  getPointLedger(filter?: { kind?: PointLedgerEntry["kind"]; projectId?: string; from?: string }) {
+    return this.getLedger(filter);
+  },
+  /** GET /api/billing/receipts/:messageId — per-message itemized receipt. */
+  async getUsageReceipt(messageId: string): Promise<UsageReceipt | null> {
+    await wait(140);
+    return receipts.find((r) => r.messageId === messageId || r.id === messageId) ?? null;
+  },
+
+  /**
+   * POST /api/agents/estimate — quick local hint only.
+   * Server is authoritative; estimates are returned as fractional Coding Points
+   * in 0.1 increments. UI should display a range.
+   */
+  estimateGenerationPoints(input: {
+    text: string;
+    taskKind?: "edit_small" | "edit_section" | "feature" | "landing" | "marketing_site" | "saas_shell" | "crawl";
+    model?: "automatic" | "standard" | "premium";
+    scopeFiles?: number;
+  }): { min: number; max: number; etaSec: number } {
+    const presets: Record<NonNullable<typeof input.taskKind>, [number, number]> = {
+      edit_small:     [0.4, 0.6],   // change a button color / edit text
+      edit_section:   [0.5, 0.9],   // remove or modify a section
+      feature:        [1.0, 1.5],   // add auth or focused feature
+      landing:        [2.0, 3.0],   // landing page with theme
+      marketing_site: [3.0, 6.0],   // animated marketing website
+      saas_shell:     [5.0, 12.0],  // multi-page SaaS shell
+      crawl:          [1.5, 3.0],   // URL clone via Firecrawl
+    };
+    const lenHint =
+      input.text.length < 80   ? "edit_small" :
+      input.text.length < 240  ? "edit_section" :
+      input.text.length < 600  ? "feature" :
+                                 "landing";
+    const kind = input.taskKind ?? (lenHint as keyof typeof presets);
+    const [baseMin, baseMax] = presets[kind];
+    const mult = input.model === "premium" ? 1.4 : input.model === "standard" ? 1.0 : 1.1; // automatic ~ blended
+    const scopeBump = (input.scopeFiles ?? 0) * 0.1;
+    const round1 = (n: number) => Math.round(n * 10) / 10;
+    const min = round1(baseMin * mult + scopeBump);
+    const max = round1(baseMax * mult + scopeBump);
+    const etaSec = Math.round((min + max) * 6);
+    return { min, max, etaSec };
+  },
+
+  /** POST /api/agents/budget — caller-supplied hard cap; server enforces. */
+  async setGenerationPointBudget(maxPoints: number): Promise<{ ok: true; maxPoints: number }> {
+    await wait(120);
+    return { ok: true, maxPoints: Math.max(0.1, Math.round(maxPoints * 10) / 10) };
   },
 };
 

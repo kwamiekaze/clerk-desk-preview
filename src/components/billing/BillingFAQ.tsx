@@ -1,27 +1,27 @@
 const ITEMS = [
   {
     q: "How does rollover work?",
-    a: "Unspent monthly CP rolls into a separate Rollover bucket at the end of each billing period, up to 1× your monthly grant. Rollover CP expires 60 days after it's deposited and is spent after monthly CP but before purchased CP.",
+    a: "Unspent monthly CP rolls into a separate Rollover bucket while you stay subscribed. It is valid for one additional billing cycle and is spent after monthly CP but before purchased CP.",
   },
   {
     q: "What's the spending order?",
-    a: "Expiring daily CP → promotional CP → monthly CP → rollover CP → purchased CP. The bureau always burns the most-expiring CP first so your purchased balance lasts.",
+    a: "Daily CP → promotional CP → monthly CP → rollover CP → purchased CP. The most-expiring points always burn first so your purchased balance lasts.",
   },
   {
     q: "What happens when I cancel?",
-    a: "You keep full access until the end of the current period. We won't issue any further grants and rollover CP expires on its existing schedule. Purchased CP never expires regardless of subscription status.",
+    a: "You keep full access until the end of the paid billing period. Monthly and rollover CP expire at the end of that period. Purchased top-up CP remains valid for 12 months from the latest purchase, regardless of subscription status.",
   },
   {
     q: "When do points expire?",
-    a: "Daily CP expires at the end of each day. Monthly CP expires at the next renewal. Promotional CP expires per offer terms. Rollover CP expires 60 days from deposit. Purchased CP does not expire.",
+    a: "Daily CP resets at midnight UTC and does not roll over. Monthly CP expires at the next renewal. Rollover CP expires after one additional cycle. Promotional CP expires per offer terms. Purchased CP is valid for 12 months from the latest top-up.",
   },
   {
     q: "What if a provider request fails?",
-    a: "If an upstream model or tool fails before producing usable output, you are not charged for AI output. You may still see a tiny sandbox or routing fee on the receipt, clearly itemized.",
+    a: "If a provider fails before producing useful output you are charged 0 CP. Cancelled requests are also free. Successful partial results are charged only for the completed portion and labeled accordingly.",
   },
   {
     q: "How are charges priced?",
-    a: "Every request is metered by measured cost (tokens, tool calls, sandbox time, crawl pages, deploy seconds) and the model route. You see an estimated range before generation and an itemized receipt afterward — the server is always the source of truth.",
+    a: "Each request is priced by measured complexity, not raw tokens. A small edit may cost ~0.5 CP, a focused feature 1–1.5 CP, a full landing page 2–3 CP. You see an estimated range before generation and the final fractional charge afterward.",
   },
 ];
 

@@ -4,6 +4,9 @@ import {
   Brain, ListTree, Wrench, FilePlus, Package, Terminal, ShieldCheck, MessageSquare, Receipt,
 } from "lucide-react";
 import { builderApi, type ChatMessage, type ChatRequest, type ModelRoute, type StreamPart, type BuildState } from "@/lib/mock/builder";
+import { MessageReceipt } from "@/components/billing/MessageReceipt";
+import { billingApi, type UsageReceipt } from "@/lib/mock/billing";
+import { formatCP } from "@/lib/format";
 
 const MODELS: { id: ModelRoute; label: string; hint: string }[] = [
   { id: "automatic",   label: "Automatic",   hint: "Router picks per step" },
@@ -26,10 +29,11 @@ export function ClerkChat({
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [text, setText] = useState("");
   const [model, setModel] = useState<ModelRoute>("recommended");
-  const [maxPoints, setMaxPoints] = useState(20);
+  const [maxPoints, setMaxPoints] = useState(3);
   const [attachments, setAttachments] = useState<ChatRequest["attachments"]>([]);
   const [streaming, setStreaming] = useState(false);
   const [liveParts, setLiveParts] = useState<StreamPart[]>([]);
+  const [openReceipt, setOpenReceipt] = useState<UsageReceipt | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -92,7 +96,19 @@ export function ClerkChat({
       </div>
 
       <div ref={listRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
-        {messages.map((m) => <MessageRow key={m.id} m={m} onJumpToFile={onJumpToFile} />)}
+        {messages.map((m) => (
+          <MessageRow
+            key={m.id}
+            m={m}
+            onJumpToFile={onJumpToFile}
+            onOpenReceipt={async () => {
+              if (m.role !== "clerk" || !m.receipt) return;
+              // SERVER CONTRACT: GET /api/billing/receipts/:messageId
+              const r = await billingApi.getUsageReceipt(m.id);
+              if (r) setOpenReceipt(r);
+            }}
+          />
+        ))}
         {streaming && liveParts.length > 0 && (
           <div className="rounded-lg border border-secondary/40 bg-secondary/5 p-3">
             <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-secondary">
@@ -143,7 +159,7 @@ export function ClerkChat({
             </div>
             <div className="flex items-center gap-2">
               <div className="hidden items-center gap-1 font-mono text-[10px] text-mute sm:flex">
-                <Coins className="h-3 w-3 text-primary" /> est {estimate.min}–{estimate.max} CP
+                <Coins className="h-3 w-3 text-primary" /> est {formatCP(estimate.min)}–{formatCP(estimate.max)} CP
               </div>
               {streaming ? (
                 <button onClick={stop} className="inline-flex items-center gap-1 rounded-md border border-destructive/60 bg-destructive/10 px-2.5 py-1.5 text-xs text-destructive">
@@ -158,6 +174,12 @@ export function ClerkChat({
           </div>
         </div>
       </div>
+
+      <MessageReceipt
+        open={!!openReceipt}
+        receipt={openReceipt}
+        onClose={() => setOpenReceipt(null)}
+      />
     </div>
   );
 }
@@ -197,16 +219,28 @@ function BudgetField({ value, onChange }: { value: number; onChange: (v: number)
     <label className="inline-flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] text-mute hover:bg-surface">
       <Coins className="h-3 w-3 text-primary" /> max
       <input
-        type="number" min={1} max={500} value={value}
-        onChange={(e) => onChange(Number(e.target.value) || 1)}
-        className="w-12 bg-transparent text-right text-foreground focus:outline-none"
+        type="number"
+        min={0.1}
+        max={50}
+        step={0.1}
+        value={value}
+        onChange={(e) => onChange(Math.max(0.1, Number(e.target.value) || 0.1))}
+        className="w-14 bg-transparent text-right text-foreground focus:outline-none"
       />
       CP
     </label>
   );
 }
 
-function MessageRow({ m, onJumpToFile }: { m: ChatMessage; onJumpToFile: (p: string) => void }) {
+function MessageRow({
+  m,
+  onJumpToFile,
+  onOpenReceipt,
+}: {
+  m: ChatMessage;
+  onJumpToFile: (p: string) => void;
+  onOpenReceipt?: () => void;
+}) {
   if (m.role === "user") {
     return (
       <div className="ml-6 rounded-lg border border-border bg-background p-3">
@@ -232,9 +266,18 @@ function MessageRow({ m, onJumpToFile }: { m: ChatMessage; onJumpToFile: (p: str
       {m.parts && m.parts.length > 0 && <PartsStream parts={m.parts} onJumpToFile={onJumpToFile} />}
       {m.text && <div className="mt-2 text-sm text-foreground/90">{m.text}</div>}
       {m.receipt && (
-        <div className="mt-2 flex items-center justify-between rounded-md border border-border bg-surface/60 px-2 py-1.5 font-mono text-[10px] text-mute">
-          <span className="inline-flex items-center gap-1"><Receipt className="h-3 w-3 text-primary" /> receipt</span>
-          <span>{m.receipt.pointsSpent} CP · {(m.receipt.tokens / 1000).toFixed(1)}k tok · {(m.receipt.ms / 1000).toFixed(1)}s</span>
+        <div className="mt-2 flex items-center justify-between gap-2 rounded-md border border-border bg-surface/60 px-2 py-1.5 font-mono text-[10px] text-mute">
+          <span className="inline-flex items-center gap-1">
+            <Receipt className="h-3 w-3 text-primary" />
+            <span className="text-foreground">{formatCP(m.receipt.pointsSpent)} CP</span>
+            <span className="opacity-70">· {(m.receipt.ms / 1000).toFixed(1)}s</span>
+          </span>
+          <button
+            onClick={onOpenReceipt}
+            className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-mute hover:border-primary/40 hover:text-primary"
+          >
+            view receipt
+          </button>
         </div>
       )}
     </div>

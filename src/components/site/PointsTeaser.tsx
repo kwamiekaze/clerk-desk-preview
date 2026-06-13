@@ -7,33 +7,34 @@ export function PointsTeaser() {
       <div className="relative grid gap-10 p-8 sm:p-12 lg:grid-cols-[1.1fr_1fr]">
         <div>
           <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">
-            Coding Points · CP
+            Coding Points
           </div>
           <h3 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            One ledger currency.<br />
-            Every clerk, every build.
+            Small, friendly numbers.<br />
+            One charge per completed task.
           </h3>
           <p className="mt-4 max-w-md text-mute">
-            CP is the transparent unit of work across the bureau. Simple agent calls cost a few points;
-            full crawls and deployments cost more. No opaque token math, no surprise bills.
+            Coding Points reflect the actual work a clerk completed — not raw tokens. You see an
+            estimated range before a build and the final fractional charge after.
           </p>
           <div className="mt-6 flex items-baseline gap-3 font-mono text-sm text-mute">
-            <span className="text-3xl font-semibold text-foreground">1 CP</span>
-            <span>≈ one specialist micro-task</span>
+            <span className="text-3xl font-semibold text-foreground">0.5 CP</span>
+            <span>≈ a quick edit · fractional in 0.1 steps</span>
           </div>
         </div>
 
         <div className="rounded-xl border border-border bg-background/60 p-5">
           <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-mute">
-            Sample dispatch
+            Typical charges
           </div>
           <ul className="mt-4 divide-y divide-border">
             {[
-              ["Intake clerk · parse brief", "2 CP"],
-              ["Firecrawl · 14 routes", "6 CP"],
-              ["Designer · lift tokens", "3 CP"],
-              ["Engineer · scaffold + wire", "5 CP"],
-              ["QA · type + a11y pass", "2 CP"],
+              ["Change a button color or text", "~0.5 CP"],
+              ["Remove or modify a section", "0.5–0.9 CP"],
+              ["Add auth or a focused feature", "1.0–1.5 CP"],
+              ["Landing page with full theme", "2.0–3.0 CP"],
+              ["Animated marketing website", "3.0–6.0 CP"],
+              ["Multi-page SaaS shell", "5.0–12 CP"],
             ].map(([label, cost]) => (
               <li key={label} className="flex items-center justify-between py-2.5 text-sm">
                 <span className="text-foreground/90">{label}</span>
@@ -41,9 +42,8 @@ export function PointsTeaser() {
               </li>
             ))}
           </ul>
-          <div className="mt-3 flex items-center justify-between border-t border-border pt-3 font-mono text-sm">
-            <span className="uppercase tracking-[0.18em] text-mute">Total</span>
-            <span className="text-primary">18 CP</span>
+          <div className="mt-3 border-t border-border pt-3 font-mono text-[11px] text-mute">
+            Estimates only. Failed provider calls cost 0 CP.
           </div>
         </div>
       </div>

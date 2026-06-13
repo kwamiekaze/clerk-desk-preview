@@ -17,14 +17,14 @@ export const account: Account = {
 };
 
 export const workspaces: Workspace[] = [
-  { id: "ws_01", name: "Nightowl Studio", plan: "Bureau", seats: 4, initials: "NS", accent: "primary" },
-  { id: "ws_02", name: "Personal", plan: "Apprentice", seats: 1, initials: "PE", accent: "secondary" },
-  { id: "ws_03", name: "Lantern Labs", plan: "Atelier", seats: 12, initials: "LL", accent: "primary" },
+  { id: "ws_01", name: "Nightowl Studio", plan: "Builder", seats: 4, initials: "NS", accent: "primary" },
+  { id: "ws_02", name: "Personal", plan: "Free", seats: 1, initials: "PE", accent: "secondary" },
+  { id: "ws_03", name: "Lantern Labs", plan: "Pro", seats: 12, initials: "LL", accent: "primary" },
 ];
 
 export const points: PointsBalance = {
-  available: 2418,
-  monthly: 3000,
+  available: 12.4,
+  monthly: 40,
   resetsAt: "2026-07-01T00:00:00Z",
 };
 
@@ -49,8 +49,8 @@ export const projects: Project[] = [
     status: "preview",
     folderId: "fld_marketing",
     thumbColor: "primary",
-    pointsSpent: 18,
-    pointsEstimate: 22,
+    pointsSpent: 1.8,
+    pointsEstimate: 2.0,
     lastActivity: iso(0, 1),
     createdAt: iso(2),
     preview: { url: "preview.codingclerks.dev/p_01", ms: 120 },
@@ -65,8 +65,8 @@ export const projects: Project[] = [
     status: "deployed",
     folderId: "fld_clones",
     thumbColor: "secondary",
-    pointsSpent: 64,
-    pointsEstimate: 60,
+    pointsSpent: 4.8,
+    pointsEstimate: 5.0,
     lastActivity: iso(1, 4),
     createdAt: iso(6),
     preview: { url: "stripe-docs.codingclerks.dev", ms: 96 },
@@ -81,8 +81,8 @@ export const projects: Project[] = [
     status: "building",
     folderId: "fld_internal",
     thumbColor: "primary",
-    pointsSpent: 9,
-    pointsEstimate: 40,
+    pointsSpent: 0.9,
+    pointsEstimate: 3.5,
     lastActivity: iso(0, 0),
     createdAt: iso(0, 2),
     preview: null,
@@ -98,7 +98,7 @@ export const projects: Project[] = [
     folderId: "fld_marketing",
     thumbColor: "secondary",
     pointsSpent: 0,
-    pointsEstimate: 35,
+    pointsEstimate: 3.0,
     lastActivity: iso(3),
     createdAt: iso(3),
     preview: null,
@@ -113,8 +113,8 @@ export const projects: Project[] = [
     status: "preview",
     folderId: "fld_clones",
     thumbColor: "warn",
-    pointsSpent: 27,
-    pointsEstimate: 30,
+    pointsSpent: 2.4,
+    pointsEstimate: 2.6,
     lastActivity: iso(4),
     createdAt: iso(8),
     preview: { url: "issue-inbox.codingclerks.dev", ms: 144 },
@@ -129,8 +129,8 @@ export const projects: Project[] = [
     status: "deployed",
     folderId: "fld_internal",
     thumbColor: "primary",
-    pointsSpent: 88,
-    pointsEstimate: 90,
+    pointsSpent: 6.2,
+    pointsEstimate: 6.0,
     lastActivity: iso(7),
     createdAt: iso(14),
     preview: { url: "field-cms.codingclerks.dev", ms: 88 },
@@ -145,8 +145,8 @@ export const projects: Project[] = [
     status: "archived",
     folderId: "fld_archive",
     thumbColor: "muted",
-    pointsSpent: 3,
-    pointsEstimate: 5,
+    pointsSpent: 0.4,
+    pointsEstimate: 0.6,
     lastActivity: iso(28),
     createdAt: iso(40),
     preview: null,
@@ -161,8 +161,8 @@ export const projects: Project[] = [
     status: "preview",
     folderId: "fld_marketing",
     thumbColor: "secondary",
-    pointsSpent: 41,
-    pointsEstimate: 55,
+    pointsSpent: 3.1,
+    pointsEstimate: 3.5,
     lastActivity: iso(1, 8),
     createdAt: iso(5),
     preview: { url: "aurora.codingclerks.dev", ms: 110 },
@@ -171,11 +171,11 @@ export const projects: Project[] = [
 ];
 
 export const activity: ActivityEvent[] = [
-  { id: "a1", projectId: "p_03", projectName: "Operator Dashboard", clerk: "engineer", message: "Scaffolding routes and shell layout", status: "run", at: iso(0, 0), pointsDelta: -3 },
-  { id: "a2", projectId: "p_01", projectName: "Aurora Pricing Page", clerk: "preview", message: "Live preview promoted to share link", status: "ok", at: iso(0, 1), pointsDelta: -1 },
-  { id: "a3", projectId: "p_02", projectName: "Stripe-style Docs Clone", clerk: "deploy", message: "Deployed to Vercel · production", status: "ok", at: iso(1, 4), pointsDelta: -4 },
+  { id: "a1", projectId: "p_03", projectName: "Operator Dashboard", clerk: "engineer", message: "Scaffolding routes and shell layout", status: "run", at: iso(0, 0), pointsDelta: -0.6 },
+  { id: "a2", projectId: "p_01", projectName: "Aurora Pricing Page", clerk: "preview", message: "Live preview promoted to share link", status: "ok", at: iso(0, 1), pointsDelta: -0.2 },
+  { id: "a3", projectId: "p_02", projectName: "Stripe-style Docs Clone", clerk: "deploy", message: "Deployed to Vercel · production", status: "ok", at: iso(1, 4), pointsDelta: -0.9 },
   { id: "a4", projectId: "p_08", projectName: "Aurora Marketing Site", clerk: "qa", message: "Type-check pass · 0 errors", status: "ok", at: iso(1, 8) },
-  { id: "a5", projectId: "p_05", projectName: "Linear-style Issue Inbox", clerk: "crawler", message: "Firecrawl complete · 22 routes captured", status: "ok", at: iso(4), pointsDelta: -6 },
+  { id: "a5", projectId: "p_05", projectName: "Linear-style Issue Inbox", clerk: "crawler", message: "Firecrawl complete · 22 routes captured", status: "ok", at: iso(4), pointsDelta: -1.1 },
   { id: "a6", projectId: "p_03", projectName: "Operator Dashboard", clerk: "intake", message: "Brief refined · 4 new components inferred", status: "warn", at: iso(0, 2) },
 ];
 
@@ -184,5 +184,5 @@ export const onboarding: OnboardingStep[] = [
   { id: "workspace", title: "Name your workspace", description: "Personalize the bureau your clerks report to.", done: true },
   { id: "first_project", title: "Dispatch your first project", description: "Submit a brief or paste a URL — your clerks will take it from there.", done: false, href: "/app/projects/new" },
   { id: "github", title: "Connect GitHub", description: "Enable one-click export to your repositories.", done: false },
-  { id: "invite", title: "Invite a teammate", description: "Bureau seats are better with company.", done: false },
+  { id: "invite", title: "Invite a teammate", description: "Workspaces are better with company.", done: false },
 ];

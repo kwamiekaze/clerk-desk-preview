@@ -51,7 +51,7 @@ function Dashboard() {
       {/* Stat strip */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat icon={Sparkles} label="Active projects" value="4" delta="+1 this week" />
-        <Stat icon={Gauge} label="CP this month" value="582" delta="of 3,000" />
+        <Stat icon={Gauge} label="CP this month" value="8.2" delta="of 40 CP" />
         <Stat icon={GitBranch} label="Repos connected" value="3" delta="github.com/nightowl" />
         <Stat icon={ArrowUpRight} label="Avg. preview time" value="11s" delta="−18% vs. last week" />
       </div>

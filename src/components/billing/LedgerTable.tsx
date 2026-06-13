@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Receipt, Gift, CalendarX, AlertCircle } from "lucide-react";
+import { ChevronDown, ChevronRight, Receipt, Gift, CalendarX, AlertCircle, Globe, ShieldCheck, Clock, RotateCcw } from "lucide-react";
 import { billingApi, BUCKET_LABEL, type PointLedgerEntry } from "@/lib/mock/billing";
-import { timeAgo } from "@/lib/format";
+import { timeAgo, formatCP } from "@/lib/format";
 
 const FILTERS: Array<{ id: "all" | PointLedgerEntry["kind"]; label: string }> = [
   { id: "all", label: "All" },
@@ -85,7 +85,7 @@ function LedgerRow({
               <div className="font-mono text-[11px] text-mute">{timeAgo(entry.at)} · expires {entry.grant.expiresAt ? new Date(entry.grant.expiresAt).toLocaleDateString() : "never"}</div>
             </div>
           </div>
-          <div className="font-mono text-sm text-primary">+{entry.grant.amount} CP</div>
+          <div className="font-mono text-sm text-primary">+{formatCP(entry.grant.amount)} CP</div>
         </div>
       </li>
     );
@@ -101,14 +101,41 @@ function LedgerRow({
               <div className="font-mono text-[11px] text-mute">{timeAgo(entry.at)} · {entry.reason.replace(/_/g, " ")}</div>
             </div>
           </div>
-          <div className="font-mono text-sm text-mute">−{entry.amount} CP</div>
+          <div className="font-mono text-sm text-mute">−{formatCP(entry.amount)} CP</div>
+        </div>
+      </li>
+    );
+  }
+  if (entry.kind === "refund") {
+    return (
+      <li className="px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <RotateCcw className="h-4 w-4 text-status-ok" />
+            <div>
+              <div className="text-sm">Refund · {entry.receipt.projectName}</div>
+              <div className="font-mono text-[11px] text-mute">{timeAgo(entry.at)} · {entry.reason.replace(/_/g, " ")}</div>
+            </div>
+          </div>
+          <div className="font-mono text-sm text-status-ok">+{formatCP(entry.amount)} CP</div>
         </div>
       </li>
     );
   }
 
   const r = entry.receipt;
-  const failed = r.status === "provider_failed";
+  const failed = r.status === "failed";
+  const partial = r.status === "partial";
+  const refunded = r.status === "refunded";
+  const statusTone =
+    failed    ? "text-status-warn" :
+    partial   ? "text-secondary"   :
+    refunded  ? "text-mute"        : "text-foreground";
+  const statusBadge =
+    failed   ? { label: "failed",    cls: "border-status-warn/40 bg-status-warn/10 text-status-warn" } :
+    partial  ? { label: "partial",   cls: "border-secondary/40 bg-secondary/10 text-secondary" } :
+    refunded ? { label: "refunded",  cls: "border-border bg-background text-mute" } :
+               { label: "completed", cls: "border-status-ok/40 bg-status-ok/10 text-status-ok" };
   return (
     <li>
       <button
@@ -120,26 +147,44 @@ function LedgerRow({
           {failed ? <AlertCircle className="h-4 w-4 text-status-warn" /> : <Receipt className="h-4 w-4 text-foreground/70" />}
           <div className="min-w-0">
             <div className="truncate text-sm">
-              {r.projectName} · <span className="text-mute">{r.clerk} / {r.taskType}</span>
+              {r.projectName} · <span className="text-mute">{r.taskTypeLabel}</span>
             </div>
             <div className="font-mono text-[11px] text-mute">
-              {timeAgo(entry.at)} · {r.member.name} · route: {r.modelRoute}
+              {timeAgo(entry.at)} · {r.member.name} · {r.modelRouteLabel}
             </div>
           </div>
         </div>
         <div className="text-right">
-          <div className={`font-mono text-sm ${failed ? "text-status-warn" : "text-foreground"}`}>
-            {failed ? "0 CP (failed)" : `−${r.finalCharge} CP`}
+          <div className={`font-mono text-sm ${statusTone}`}>
+            {failed ? "0 CP" : `−${formatCP(r.finalCharge)} CP`}
           </div>
-          <div className="font-mono text-[10px] text-mute">est {r.estimatedRange.min}–{r.estimatedRange.max}</div>
+          <div className="font-mono text-[10px] text-mute">est {formatCP(r.estimatedRange.min)}–{formatCP(r.estimatedRange.max)}</div>
         </div>
       </button>
 
       {open && (
         <div className="border-t border-border/60 bg-background/40 px-4 py-3">
-          <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-mute">
-            Itemized receipt · {r.id}
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className={`rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${statusBadge.cls}`}>
+              {statusBadge.label}
+            </span>
+            <span className="rounded-full border border-border bg-background px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-mute">
+              {r.modelRouteLabel}
+            </span>
+            <span className="inline-flex items-center gap-1 font-mono text-[10px] text-mute">
+              <Globe className={`h-3 w-3 ${r.firecrawlUsed ? "text-primary" : "opacity-50"}`} />
+              Firecrawl: {r.firecrawlUsed ? "yes" : "no"}
+            </span>
+            <span className="inline-flex items-center gap-1 font-mono text-[10px] text-mute">
+              <ShieldCheck className={`h-3 w-3 ${r.validationCompleted ? "text-status-ok" : "opacity-50"}`} />
+              Build validation: {r.validationCompleted ? "yes" : "no"}
+            </span>
+            <span className="inline-flex items-center gap-1 font-mono text-[10px] text-mute">
+              <Clock className="h-3 w-3" />
+              {(r.durationMs / 1000).toFixed(1)}s
+            </span>
           </div>
+
           <ul className="divide-y divide-border/60">
             {r.lines.map((l, i) => (
               <li key={i} className="flex items-center justify-between py-1.5 text-sm">
@@ -148,7 +193,7 @@ function LedgerRow({
                   {l.detail && <div className="font-mono text-[11px] text-mute">{l.detail}</div>}
                 </div>
                 <div className={`font-mono text-sm ${l.points < 0 ? "text-primary" : "text-foreground"}`}>
-                  {l.points > 0 ? "+" : ""}{l.points} CP
+                  {l.points > 0 ? "+" : ""}{formatCP(l.points)} CP
                 </div>
               </li>
             ))}
@@ -156,7 +201,7 @@ function LedgerRow({
           <div className="mt-2 flex items-center justify-between border-t border-border pt-2 font-mono text-xs">
             <span className="uppercase tracking-[0.18em] text-mute">Total charge</span>
             <span className={failed ? "text-status-warn" : "text-primary"}>
-              {failed ? "0 CP — provider failed, no AI output" : `${r.finalCharge} CP`}
+              {failed ? "0 CP — provider failed, no charge" : `${formatCP(r.finalCharge)} CP`}
             </span>
           </div>
           {!failed && entry.kind === "charge" && (
