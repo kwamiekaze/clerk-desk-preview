@@ -12,11 +12,11 @@ import { Wordmark } from "@/components/brand/Wordmark";
 import { WorkspaceSelector } from "./WorkspaceSelector";
 import { PointsBadge } from "./PointsBadge";
 
-const PRIMARY = [
+const PRIMARY: Array<{ label: string; to: "/app" | "/app/projects" | "/app/projects/new"; icon: typeof LayoutDashboard; exact?: boolean }> = [
   { label: "Dashboard", to: "/app", icon: LayoutDashboard, exact: true },
   { label: "Projects", to: "/app/projects", icon: FolderKanban },
   { label: "New project", to: "/app/projects/new", icon: PlusSquare },
-] as const;
+];
 
 const SECONDARY = [
   { label: "Models", icon: Sparkles, badge: "soon" },
