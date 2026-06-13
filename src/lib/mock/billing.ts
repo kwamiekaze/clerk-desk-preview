@@ -448,6 +448,67 @@ export const billingApi = {
     await wait();
     return { ...subscription, cancelAtPeriodEnd: false };
   },
+
+  /* ---- Server-contract aliases (match spec naming) -------------------- */
+  /** POST /api/billing/checkout — server creates Stripe Checkout Session. */
+  createCheckoutSession(planId: PlanId, cadence: Cadence = "monthly") { return this.startCheckout(planId, cadence); },
+  /** POST /api/billing/topup — server creates one-time payment Session. */
+  createTopupCheckoutSession(packageId: TopUp["id"]) { return this.startTopup(packageId); },
+  /** POST /api/billing/portal — Stripe Customer Portal. */
+  createCustomerPortalSession() { return this.openCustomerPortal(); },
+  /** GET /api/billing/points */
+  getPointBalance() { return this.getBalance(); },
+  /** GET /api/billing/ledger */
+  getPointLedger(filter?: { kind?: PointLedgerEntry["kind"]; projectId?: string; from?: string }) {
+    return this.getLedger(filter);
+  },
+  /** GET /api/billing/receipts/:messageId — per-message itemized receipt. */
+  async getUsageReceipt(messageId: string): Promise<UsageReceipt | null> {
+    await wait(140);
+    return receipts.find((r) => r.messageId === messageId || r.id === messageId) ?? null;
+  },
+
+  /**
+   * POST /api/agents/estimate — quick local hint only.
+   * Server is authoritative; estimates are returned as fractional Coding Points
+   * in 0.1 increments. UI should display a range.
+   */
+  estimateGenerationPoints(input: {
+    text: string;
+    taskKind?: "edit_small" | "edit_section" | "feature" | "landing" | "marketing_site" | "saas_shell" | "crawl";
+    model?: "automatic" | "standard" | "premium";
+    scopeFiles?: number;
+  }): { min: number; max: number; etaSec: number } {
+    const presets: Record<NonNullable<typeof input.taskKind>, [number, number]> = {
+      edit_small:     [0.4, 0.6],   // change a button color / edit text
+      edit_section:   [0.5, 0.9],   // remove or modify a section
+      feature:        [1.0, 1.5],   // add auth or focused feature
+      landing:        [2.0, 3.0],   // landing page with theme
+      marketing_site: [3.0, 6.0],   // animated marketing website
+      saas_shell:     [5.0, 12.0],  // multi-page SaaS shell
+      crawl:          [1.5, 3.0],   // URL clone via Firecrawl
+    };
+    const lenHint =
+      input.text.length < 80   ? "edit_small" :
+      input.text.length < 240  ? "edit_section" :
+      input.text.length < 600  ? "feature" :
+                                 "landing";
+    const kind = input.taskKind ?? (lenHint as keyof typeof presets);
+    const [baseMin, baseMax] = presets[kind];
+    const mult = input.model === "premium" ? 1.4 : input.model === "standard" ? 1.0 : 1.1; // automatic ~ blended
+    const scopeBump = (input.scopeFiles ?? 0) * 0.1;
+    const round1 = (n: number) => Math.round(n * 10) / 10;
+    const min = round1(baseMin * mult + scopeBump);
+    const max = round1(baseMax * mult + scopeBump);
+    const etaSec = Math.round((min + max) * 6);
+    return { min, max, etaSec };
+  },
+
+  /** POST /api/agents/budget — caller-supplied hard cap; server enforces. */
+  async setGenerationPointBudget(maxPoints: number): Promise<{ ok: true; maxPoints: number }> {
+    await wait(120);
+    return { ok: true, maxPoints: Math.max(0.1, Math.round(maxPoints * 10) / 10) };
+  },
 };
 
 /* ===================== Helpers ===================== */
