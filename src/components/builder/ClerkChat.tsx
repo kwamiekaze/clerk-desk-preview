@@ -159,7 +159,7 @@ export function ClerkChat({
             </div>
             <div className="flex items-center gap-2">
               <div className="hidden items-center gap-1 font-mono text-[10px] text-mute sm:flex">
-                <Coins className="h-3 w-3 text-primary" /> est {estimate.min}–{estimate.max} CP
+                <Coins className="h-3 w-3 text-primary" /> est {formatCP(estimate.min)}–{formatCP(estimate.max)} CP
               </div>
               {streaming ? (
                 <button onClick={stop} className="inline-flex items-center gap-1 rounded-md border border-destructive/60 bg-destructive/10 px-2.5 py-1.5 text-xs text-destructive">
@@ -174,6 +174,12 @@ export function ClerkChat({
           </div>
         </div>
       </div>
+
+      <MessageReceipt
+        open={!!openReceipt}
+        receipt={openReceipt}
+        onClose={() => setOpenReceipt(null)}
+      />
     </div>
   );
 }
