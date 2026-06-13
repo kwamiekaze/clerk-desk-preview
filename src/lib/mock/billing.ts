@@ -373,9 +373,9 @@ const invoices: Invoice[] = [
 ];
 
 const members: Member[] = [
-  { id: "u_1", name: "Avery Vance", email: "avery@nightowl.studio", role: "Owner", monthlyLimit: null, usedThisMonth: 32 },
-  { id: "u_2", name: "Sasha Patel", email: "sasha@nightowl.studio", role: "Admin", monthlyLimit: 80, usedThisMonth: 41 },
-  { id: "u_3", name: "Kai Nguyen", email: "kai@nightowl.studio", role: "Member", monthlyLimit: 40, usedThisMonth: 38 },
+  { id: "u_1", name: "Avery Vance", email: "avery@nightowl.studio", role: "Owner", monthlyLimit: null, usedThisMonth: 8.2 },
+  { id: "u_2", name: "Sasha Patel", email: "sasha@nightowl.studio", role: "Admin", monthlyLimit: 20, usedThisMonth: 12.1 },
+  { id: "u_3", name: "Kai Nguyen", email: "kai@nightowl.studio", role: "Member", monthlyLimit: 10, usedThisMonth: 7.5 },
 ];
 
 /* ===================== API ===================== */
