@@ -28,9 +28,9 @@ export function PointsBadge({ compact = false }: { compact?: boolean }) {
         <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-mute">
           Coding Points
         </div>
-        <button className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] text-mute hover:text-foreground">
+        <Link to="/app/billing" className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] text-mute hover:text-foreground">
           top up
-        </button>
+        </Link>
       </div>
       <div className="mt-2 flex items-baseline gap-1.5">
         <span className="text-xl font-semibold tracking-tight">
