@@ -173,11 +173,11 @@ export function NewProjectForm() {
               k="Estimated CP"
               v={
                 <span className="font-mono">
-                  {estimate.min}–{estimate.max}
+                  {estimate.min.toFixed(1)}–{estimate.max.toFixed(1)}
                 </span>
               }
             />
-            <Row k="Budget cap" v={<span className="font-mono">{budget} CP</span>} />
+            <Row k="Budget cap" v={<span className="font-mono">{budget.toFixed(1)} CP</span>} />
             <Row k="ETA" v={<span className="font-mono">~{estimate.etaSec}s</span>} />
           </dl>
 
