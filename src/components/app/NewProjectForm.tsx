@@ -12,7 +12,7 @@ export function NewProjectForm() {
   const [brief, setBrief] = useState("");
   const [url, setUrl] = useState("");
   const [model, setModel] = useState<ModelTier>("recommended");
-  const [budget, setBudget] = useState(50);
+  const [budget, setBudget] = useState(3);
   const [loading, setLoading] = useState(false);
 
   const estimate = useMemo(
