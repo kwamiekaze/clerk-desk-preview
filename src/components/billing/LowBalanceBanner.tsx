@@ -2,7 +2,7 @@ import { AlertTriangle, Zap } from "lucide-react";
 
 export function LowBalanceBanner({
   available,
-  threshold = 10,
+  threshold = 2,
   onTopUp,
 }: {
   available: number;
@@ -10,7 +10,7 @@ export function LowBalanceBanner({
   onTopUp: () => void;
 }) {
   if (available > threshold) return null;
-  const insufficient = available <= 0;
+  const insufficient = available < 0.5;
 
   return (
     <div
