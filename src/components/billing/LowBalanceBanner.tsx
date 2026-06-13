@@ -1,4 +1,6 @@
 import { AlertTriangle, Zap } from "lucide-react";
+import { formatCP } from "@/lib/format";
+
 
 export function LowBalanceBanner({
   available,
