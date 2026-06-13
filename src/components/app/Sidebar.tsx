@@ -3,29 +3,31 @@ import {
   LayoutDashboard,
   FolderKanban,
   PlusSquare,
-  Sparkles,
   GitBranch,
   Settings,
   LifeBuoy,
   Receipt,
+  ShieldAlert,
 } from "lucide-react";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { WorkspaceSelector } from "./WorkspaceSelector";
 import { PointsBadge } from "./PointsBadge";
 
-const PRIMARY: Array<{ label: string; to: "/app" | "/app/projects" | "/app/projects/new" | "/app/billing"; icon: typeof LayoutDashboard; exact?: boolean }> = [
+type AppPath = "/app" | "/app/projects" | "/app/projects/new" | "/app/billing" | "/app/settings" | "/admin";
+
+const PRIMARY: Array<{ label: string; to: AppPath; icon: typeof LayoutDashboard; exact?: boolean }> = [
   { label: "Dashboard", to: "/app", icon: LayoutDashboard, exact: true },
   { label: "Projects", to: "/app/projects", icon: FolderKanban },
   { label: "New project", to: "/app/projects/new", icon: PlusSquare },
   { label: "Billing & CP", to: "/app/billing", icon: Receipt },
+  { label: "Settings", to: "/app/settings", icon: Settings },
 ];
 
-const SECONDARY = [
-  { label: "Models", icon: Sparkles, badge: "soon" },
-  { label: "GitHub", icon: GitBranch },
-  { label: "Settings", icon: Settings },
-  { label: "Support", icon: LifeBuoy },
-] as const;
+const SECONDARY: Array<{ label: string; to: AppPath; icon: typeof LayoutDashboard; badge?: string }> = [
+  { label: "GitHub export", to: "/app/settings", icon: GitBranch },
+  { label: "Admin", to: "/admin", icon: ShieldAlert, badge: "ops" },
+  { label: "Support", to: "/app/settings", icon: LifeBuoy },
+];
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -74,20 +76,21 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             const Icon = item.icon;
             return (
               <li key={item.label}>
-                <button
-                  type="button"
+                <Link
+                  to={item.to}
+                  onClick={onNavigate}
                   className="flex w-full items-center justify-between rounded-md px-2.5 py-2 text-sm text-mute hover:bg-background hover:text-foreground"
                 >
                   <span className="flex items-center gap-2.5">
                     <Icon className="h-4 w-4" />
                     {item.label}
                   </span>
-                  {"badge" in item && item.badge && (
+                  {item.badge && (
                     <span className="rounded-full border border-border bg-background px-1.5 font-mono text-[9px] uppercase tracking-wider text-mute">
                       {item.badge}
                     </span>
                   )}
-                </button>
+                </Link>
               </li>
             );
           })}
