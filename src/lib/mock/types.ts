@@ -44,7 +44,7 @@ export type ActivityEvent = {
 export type Workspace = {
   id: string;
   name: string;
-  plan: "Apprentice" | "Bureau" | "Atelier";
+  plan: "Free" | "Starter" | "Builder" | "Pro";
   seats: number;
   initials: string;
   accent: "primary" | "secondary";
