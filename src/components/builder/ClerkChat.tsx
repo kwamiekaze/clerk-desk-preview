@@ -219,9 +219,13 @@ function BudgetField({ value, onChange }: { value: number; onChange: (v: number)
     <label className="inline-flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] text-mute hover:bg-surface">
       <Coins className="h-3 w-3 text-primary" /> max
       <input
-        type="number" min={1} max={500} value={value}
-        onChange={(e) => onChange(Number(e.target.value) || 1)}
-        className="w-12 bg-transparent text-right text-foreground focus:outline-none"
+        type="number"
+        min={0.1}
+        max={50}
+        step={0.1}
+        value={value}
+        onChange={(e) => onChange(Math.max(0.1, Number(e.target.value) || 0.1))}
+        className="w-14 bg-transparent text-right text-foreground focus:outline-none"
       />
       CP
     </label>
