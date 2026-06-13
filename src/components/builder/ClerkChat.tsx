@@ -29,10 +29,11 @@ export function ClerkChat({
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [text, setText] = useState("");
   const [model, setModel] = useState<ModelRoute>("recommended");
-  const [maxPoints, setMaxPoints] = useState(20);
+  const [maxPoints, setMaxPoints] = useState(3);
   const [attachments, setAttachments] = useState<ChatRequest["attachments"]>([]);
   const [streaming, setStreaming] = useState(false);
   const [liveParts, setLiveParts] = useState<StreamPart[]>([]);
+  const [openReceipt, setOpenReceipt] = useState<UsageReceipt | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
