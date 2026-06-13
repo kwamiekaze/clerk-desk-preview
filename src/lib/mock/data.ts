@@ -17,14 +17,14 @@ export const account: Account = {
 };
 
 export const workspaces: Workspace[] = [
-  { id: "ws_01", name: "Nightowl Studio", plan: "Bureau", seats: 4, initials: "NS", accent: "primary" },
-  { id: "ws_02", name: "Personal", plan: "Apprentice", seats: 1, initials: "PE", accent: "secondary" },
-  { id: "ws_03", name: "Lantern Labs", plan: "Atelier", seats: 12, initials: "LL", accent: "primary" },
+  { id: "ws_01", name: "Nightowl Studio", plan: "Builder", seats: 4, initials: "NS", accent: "primary" },
+  { id: "ws_02", name: "Personal", plan: "Free", seats: 1, initials: "PE", accent: "secondary" },
+  { id: "ws_03", name: "Lantern Labs", plan: "Pro", seats: 12, initials: "LL", accent: "primary" },
 ];
 
 export const points: PointsBalance = {
-  available: 2418,
-  monthly: 3000,
+  available: 12.4,
+  monthly: 40,
   resetsAt: "2026-07-01T00:00:00Z",
 };
 
