@@ -4,6 +4,9 @@ import {
   Brain, ListTree, Wrench, FilePlus, Package, Terminal, ShieldCheck, MessageSquare, Receipt,
 } from "lucide-react";
 import { builderApi, type ChatMessage, type ChatRequest, type ModelRoute, type StreamPart, type BuildState } from "@/lib/mock/builder";
+import { MessageReceipt } from "@/components/billing/MessageReceipt";
+import { billingApi, type UsageReceipt } from "@/lib/mock/billing";
+import { formatCP } from "@/lib/format";
 
 const MODELS: { id: ModelRoute; label: string; hint: string }[] = [
   { id: "automatic",   label: "Automatic",   hint: "Router picks per step" },
