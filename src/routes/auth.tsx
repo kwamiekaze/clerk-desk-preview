@@ -19,7 +19,7 @@ function AuthPage() {
   const { mode, email: initialEmail } = useSearch({ from: "/auth" });
   const navigate = useNavigate({ from: "/auth" });
   const setMode = (m: Mode, email = "") =>
-    navigate({ search: (prev) => ({ ...prev, mode: m, email: email || prev.email }) });
+    navigate({ search: (prev: { mode: Mode; email: string }) => ({ ...prev, mode: m, email: email || prev.email }) });
 
   return (
     <div className="relative grid min-h-screen lg:grid-cols-2">
