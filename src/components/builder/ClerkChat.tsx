@@ -96,7 +96,19 @@ export function ClerkChat({
       </div>
 
       <div ref={listRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
-        {messages.map((m) => <MessageRow key={m.id} m={m} onJumpToFile={onJumpToFile} />)}
+        {messages.map((m) => (
+          <MessageRow
+            key={m.id}
+            m={m}
+            onJumpToFile={onJumpToFile}
+            onOpenReceipt={async () => {
+              if (m.role !== "clerk" || !m.receipt) return;
+              // SERVER CONTRACT: GET /api/billing/receipts/:messageId
+              const r = await billingApi.getUsageReceipt(m.id);
+              if (r) setOpenReceipt(r);
+            }}
+          />
+        ))}
         {streaming && liveParts.length > 0 && (
           <div className="rounded-lg border border-secondary/40 bg-secondary/5 p-3">
             <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-secondary">
