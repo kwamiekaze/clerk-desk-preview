@@ -232,7 +232,15 @@ function BudgetField({ value, onChange }: { value: number; onChange: (v: number)
   );
 }
 
-function MessageRow({ m, onJumpToFile }: { m: ChatMessage; onJumpToFile: (p: string) => void }) {
+function MessageRow({
+  m,
+  onJumpToFile,
+  onOpenReceipt,
+}: {
+  m: ChatMessage;
+  onJumpToFile: (p: string) => void;
+  onOpenReceipt?: () => void;
+}) {
   if (m.role === "user") {
     return (
       <div className="ml-6 rounded-lg border border-border bg-background p-3">
@@ -258,9 +266,18 @@ function MessageRow({ m, onJumpToFile }: { m: ChatMessage; onJumpToFile: (p: str
       {m.parts && m.parts.length > 0 && <PartsStream parts={m.parts} onJumpToFile={onJumpToFile} />}
       {m.text && <div className="mt-2 text-sm text-foreground/90">{m.text}</div>}
       {m.receipt && (
-        <div className="mt-2 flex items-center justify-between rounded-md border border-border bg-surface/60 px-2 py-1.5 font-mono text-[10px] text-mute">
-          <span className="inline-flex items-center gap-1"><Receipt className="h-3 w-3 text-primary" /> receipt</span>
-          <span>{m.receipt.pointsSpent} CP · {(m.receipt.tokens / 1000).toFixed(1)}k tok · {(m.receipt.ms / 1000).toFixed(1)}s</span>
+        <div className="mt-2 flex items-center justify-between gap-2 rounded-md border border-border bg-surface/60 px-2 py-1.5 font-mono text-[10px] text-mute">
+          <span className="inline-flex items-center gap-1">
+            <Receipt className="h-3 w-3 text-primary" />
+            <span className="text-foreground">{formatCP(m.receipt.pointsSpent)} CP</span>
+            <span className="opacity-70">· {(m.receipt.ms / 1000).toFixed(1)}s</span>
+          </span>
+          <button
+            onClick={onOpenReceipt}
+            className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-mute hover:border-primary/40 hover:text-primary"
+          >
+            view receipt
+          </button>
         </div>
       )}
     </div>
