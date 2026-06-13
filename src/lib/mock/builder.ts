@@ -167,9 +167,9 @@ const HERO_DIFF: DiffHunk[] = [
 ];
 
 const VERSIONS: Version[] = [
-  { id: "v_07", label: "v0.7 — Hero polish", at: new Date(Date.now() - 1000 * 60 * 4).toISOString(), author: "Engineer clerk", summary: "Refined hero hierarchy, added eyebrow.", filesChanged: 2, pointsSpent: 3 },
-  { id: "v_06", label: "v0.6 — Feature grid", at: new Date(Date.now() - 1000 * 60 * 22).toISOString(), author: "Designer clerk", summary: "Added Feature.tsx + responsive grid.", filesChanged: 4, pointsSpent: 6 },
-  { id: "v_05", label: "v0.5 — Scaffold", at: new Date(Date.now() - 1000 * 60 * 60).toISOString(), author: "Intake clerk", summary: "Initial scaffold from brief.", filesChanged: 14, pointsSpent: 9 },
+  { id: "v_07", label: "v0.7 — Hero polish",     at: new Date(Date.now() - 1000 * 60 * 4).toISOString(),  author: "Engineer clerk", summary: "Refined hero hierarchy, added eyebrow.",  filesChanged: 2,  pointsSpent: 0.6 },
+  { id: "v_06", label: "v0.6 — Feature grid",    at: new Date(Date.now() - 1000 * 60 * 22).toISOString(), author: "Designer clerk", summary: "Added Feature.tsx + responsive grid.",   filesChanged: 4,  pointsSpent: 1.2 },
+  { id: "v_05", label: "v0.5 — Scaffold",        at: new Date(Date.now() - 1000 * 60 * 60).toISOString(), author: "Intake clerk",   summary: "Initial scaffold from brief.",            filesChanged: 14, pointsSpent: 2.4 },
 ];
 
 // -------------------------------- adapters --------------------------------
