@@ -167,21 +167,29 @@ export type ReceiptLine = {
   kind: ReceiptLineKind;
   label: string;
   detail?: string;
-  points: number;            // can be negative for discounts
+  points: number;            // fractional (0.1 step); negative for discounts/refunds
 };
+
+export type ReceiptStatus = "completed" | "partial" | "failed" | "refunded";
 
 export type UsageReceipt = {
   id: string;
+  messageId?: string;
   projectId: string;
   projectName: string;
   clerk: "intake" | "crawler" | "designer" | "engineer" | "qa" | "preview" | "deploy";
-  modelRoute: "automatic" | "fast" | "recommended" | "premium";
+  modelRoute: "automatic" | "fast" | "recommended" | "premium" | "standard";
+  modelRouteLabel: "Automatic" | "Standard" | "Premium";
   taskType: "scaffold" | "edit" | "repair" | "crawl" | "deploy" | "preview" | "qa";
+  taskTypeLabel: string;            // user-facing, e.g. "Edit text", "Build landing page"
   member: { id: string; name: string };
   estimatedRange: { min: number; max: number };
   estimatedAt: string;
-  finalCharge: number;       // 0 if provider failed
-  status: "charged" | "provider_failed" | "refunded";
+  finalCharge: number;              // fractional 0.1 step; 0 if provider failed / cancelled
+  status: ReceiptStatus;
+  firecrawlUsed: boolean;
+  validationCompleted: boolean;
+  durationMs: number;
   lines: ReceiptLine[];
   at: string;
 };
@@ -189,6 +197,7 @@ export type UsageReceipt = {
 export type PointLedgerEntry =
   | { kind: "grant"; id: string; at: string; grant: PointGrant }
   | { kind: "charge"; id: string; at: string; receipt: UsageReceipt; deductedFrom: PointBucket[] }
+  | { kind: "refund"; id: string; at: string; receipt: UsageReceipt; bucket: PointBucket; amount: number; reason: string }
   | { kind: "expiry"; id: string; at: string; bucket: PointBucket; amount: number; reason: string };
 
 /* --- Usage --------------------------------------------------------------- */
