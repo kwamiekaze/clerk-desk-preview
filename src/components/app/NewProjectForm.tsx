@@ -140,16 +140,16 @@ export function NewProjectForm() {
           <div className="flex items-center gap-4 rounded-md border border-border bg-surface p-4">
             <input
               type="range"
-              min={10}
-              max={500}
-              step={5}
+              min={0.5}
+              max={20}
+              step={0.5}
               value={budget}
               onChange={(e) => setBudget(Number(e.target.value))}
               className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-surface-2 accent-[oklch(var(--primary))]"
               style={{ accentColor: "var(--primary)" }}
             />
             <div className="w-24 text-right font-mono text-sm">
-              <span className="text-foreground">{budget}</span>
+              <span className="text-foreground">{budget.toFixed(1)}</span>
               <span className="text-mute"> CP</span>
             </div>
           </div>
