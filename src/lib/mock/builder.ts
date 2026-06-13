@@ -265,7 +265,7 @@ export const builderApi = {
       }),
     );
     at(4100, () => {
-      const receipt: StreamPart = { type: "receipt", id: "r1", pointsSpent: 4, tokens: 18420, ms: 4080 };
+      const receipt: StreamPart = { type: "receipt", id: "r1", pointsSpent: 1.2, tokens: 18420, ms: 4080 };
       emit(receipt);
       handlers.onState("ready");
       handlers.onDone({
@@ -274,7 +274,7 @@ export const builderApi = {
         text: "Hero tightened + testimonial strip added.",
         at: new Date().toISOString(),
         parts,
-        receipt: { pointsSpent: 4, tokens: 18420, ms: 4080 },
+        receipt: { pointsSpent: 1.2, tokens: 18420, ms: 4080 },
       });
     });
 
@@ -287,11 +287,14 @@ export const builderApi = {
   },
 
   estimate(req: Pick<ChatRequest, "model" | "text" | "scope">) {
-    const base = Math.max(1, Math.round(req.text.length / 220));
-    const scope = (req.scope?.length ?? 0) * 0.6;
-    const mult = req.model === "premium" ? 2.2 : req.model === "fast" ? 0.55 : req.model === "recommended" ? 1.2 : 1;
-    const min = Math.max(1, Math.round((base + scope) * mult));
-    return { min, max: min + 3 };
+    // Fractional Coding Points (0.1 step). Hint only — server is authoritative.
+    const base = req.text.length < 80 ? 0.4 : req.text.length < 240 ? 0.7 : req.text.length < 600 ? 1.2 : 2.0;
+    const scope = (req.scope?.length ?? 0) * 0.1;
+    const mult = req.model === "premium" ? 1.4 : req.model === "fast" ? 0.7 : req.model === "recommended" ? 1.0 : 1.1;
+    const round1 = (n: number) => Math.round(n * 10) / 10;
+    const min = Math.max(0.1, round1((base + scope) * mult));
+    const max = round1(min + Math.max(0.3, base * 0.6));
+    return { min, max };
   },
 
   /** POST /api/integrations/github/export */
