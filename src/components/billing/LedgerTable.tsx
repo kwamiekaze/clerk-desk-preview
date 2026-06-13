@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Receipt, Gift, CalendarX, AlertCircle } from "lucide-react";
+import { ChevronDown, ChevronRight, Receipt, Gift, CalendarX, AlertCircle, Globe, ShieldCheck, Clock, RotateCcw } from "lucide-react";
 import { billingApi, BUCKET_LABEL, type PointLedgerEntry } from "@/lib/mock/billing";
-import { timeAgo } from "@/lib/format";
+import { timeAgo, formatCP } from "@/lib/format";
 
 const FILTERS: Array<{ id: "all" | PointLedgerEntry["kind"]; label: string }> = [
   { id: "all", label: "All" },
