@@ -27,7 +27,7 @@ export function NewProjectForm() {
   // Auto-name from URL/brief if empty
   useEffect(() => {
     if (name) return;
-    if (kind === "url" && url) {
+    if (kind === "clone" && url) {
       try {
         const host = new URL(url).hostname.replace(/^www\./, "");
         setName(host.split(".")[0]);
@@ -59,7 +59,7 @@ export function NewProjectForm() {
         {/* Tabs */}
         <div className="overflow-hidden rounded-xl border border-border bg-surface">
           <div role="tablist" aria-label="Project source" className="flex border-b border-border">
-            {(["brief", "url"] as const).map((k) => {
+            {(["brief", "clone"] as const).map((k) => {
               const active = kind === k;
               const Icon = k === "brief" ? FileText : Globe2;
               return (
@@ -119,7 +119,7 @@ export function NewProjectForm() {
             )}
 
             <div className="flex flex-wrap items-center gap-1.5">
-              {["React", "Tailwind", "TypeScript", kind === "url" ? "Firecrawl" : "Sandbox"].map((t) => (
+              {["React", "Tailwind", "TypeScript", kind === "clone" ? "Firecrawl" : "Sandbox"].map((t) => (
                 <span
                   key={t}
                   className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-2.5 py-0.5 font-mono text-[10px] text-mute"
