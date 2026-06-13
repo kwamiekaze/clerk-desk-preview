@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { mockApi } from "@/lib/mock/service";
 import type { PointsBalance } from "@/lib/mock/types";
 
