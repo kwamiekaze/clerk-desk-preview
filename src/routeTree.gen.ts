@@ -13,14 +13,28 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as CheckoutSessionRouteImport } from './routes/checkout.$session'
 import { Route as BillingSuccessRouteImport } from './routes/billing.success'
 import { Route as BillingCancelRouteImport } from './routes/billing.cancel'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminPolicyRouteImport } from './routes/admin.policy'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
+import { Route as AppSettingsIndexRouteImport } from './routes/app.settings.index'
 import { Route as AppProjectsIndexRouteImport } from './routes/app.projects.index'
 import { Route as AppBillingIndexRouteImport } from './routes/app.billing.index'
+import { Route as AppSettingsWorkspaceRouteImport } from './routes/app.settings.workspace'
+import { Route as AppSettingsRoutingRouteImport } from './routes/app.settings.routing'
+import { Route as AppSettingsPrivacyRouteImport } from './routes/app.settings.privacy'
+import { Route as AppSettingsNotificationsRouteImport } from './routes/app.settings.notifications'
+import { Route as AppSettingsMembersRouteImport } from './routes/app.settings.members'
+import { Route as AppSettingsDangerRouteImport } from './routes/app.settings.danger'
+import { Route as AppSettingsCredentialsRouteImport } from './routes/app.settings.credentials'
 import { Route as AppProjectsNewRouteImport } from './routes/app.projects.new'
 import { Route as AppProjectsIdRouteImport } from './routes/app.projects.$id'
 import { Route as AppBillingUsageRouteImport } from './routes/app.billing.usage'
@@ -47,6 +61,11 @@ const AppRoute = AppRouteImport.update({
   path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -56,6 +75,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const CheckoutSessionRoute = CheckoutSessionRouteImport.update({
   id: '/checkout/$session',
@@ -72,10 +96,35 @@ const BillingCancelRoute = BillingCancelRouteImport.update({
   path: '/billing/cancel',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppBillingRoute = AppBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
   getParentRoute: () => AppRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPolicyRoute = AdminPolicyRouteImport.update({
+  id: '/policy',
+  path: '/policy',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppSettingsRoute,
 } as any)
 const AppProjectsIndexRoute = AppProjectsIndexRouteImport.update({
   id: '/projects/',
@@ -86,6 +135,42 @@ const AppBillingIndexRoute = AppBillingIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppBillingRoute,
+} as any)
+const AppSettingsWorkspaceRoute = AppSettingsWorkspaceRouteImport.update({
+  id: '/workspace',
+  path: '/workspace',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsRoutingRoute = AppSettingsRoutingRouteImport.update({
+  id: '/routing',
+  path: '/routing',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsPrivacyRoute = AppSettingsPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsNotificationsRoute =
+  AppSettingsNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AppSettingsRoute,
+  } as any)
+const AppSettingsMembersRoute = AppSettingsMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsDangerRoute = AppSettingsDangerRouteImport.update({
+  id: '/danger',
+  path: '/danger',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsCredentialsRoute = AppSettingsCredentialsRouteImport.update({
+  id: '/credentials',
+  path: '/credentials',
+  getParentRoute: () => AppSettingsRoute,
 } as any)
 const AppProjectsNewRoute = AppProjectsNewRouteImport.update({
   id: '/projects/new',
@@ -115,120 +200,201 @@ const AppBillingInvoicesRoute = AppBillingInvoicesRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/policy': typeof AdminPolicyRoute
+  '/admin/users': typeof AdminUsersRoute
   '/app/billing': typeof AppBillingRouteWithChildren
+  '/app/settings': typeof AppSettingsRouteWithChildren
   '/billing/cancel': typeof BillingCancelRoute
   '/billing/success': typeof BillingSuccessRoute
   '/checkout/$session': typeof CheckoutSessionRoute
+  '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/app/billing/invoices': typeof AppBillingInvoicesRoute
   '/app/billing/members': typeof AppBillingMembersRoute
   '/app/billing/usage': typeof AppBillingUsageRoute
   '/app/projects/$id': typeof AppProjectsIdRoute
   '/app/projects/new': typeof AppProjectsNewRoute
+  '/app/settings/credentials': typeof AppSettingsCredentialsRoute
+  '/app/settings/danger': typeof AppSettingsDangerRoute
+  '/app/settings/members': typeof AppSettingsMembersRoute
+  '/app/settings/notifications': typeof AppSettingsNotificationsRoute
+  '/app/settings/privacy': typeof AppSettingsPrivacyRoute
+  '/app/settings/routing': typeof AppSettingsRoutingRoute
+  '/app/settings/workspace': typeof AppSettingsWorkspaceRoute
   '/app/billing/': typeof AppBillingIndexRoute
   '/app/projects/': typeof AppProjectsIndexRoute
+  '/app/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/policy': typeof AdminPolicyRoute
+  '/admin/users': typeof AdminUsersRoute
   '/billing/cancel': typeof BillingCancelRoute
   '/billing/success': typeof BillingSuccessRoute
   '/checkout/$session': typeof CheckoutSessionRoute
+  '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
   '/app/billing/invoices': typeof AppBillingInvoicesRoute
   '/app/billing/members': typeof AppBillingMembersRoute
   '/app/billing/usage': typeof AppBillingUsageRoute
   '/app/projects/$id': typeof AppProjectsIdRoute
   '/app/projects/new': typeof AppProjectsNewRoute
+  '/app/settings/credentials': typeof AppSettingsCredentialsRoute
+  '/app/settings/danger': typeof AppSettingsDangerRoute
+  '/app/settings/members': typeof AppSettingsMembersRoute
+  '/app/settings/notifications': typeof AppSettingsNotificationsRoute
+  '/app/settings/privacy': typeof AppSettingsPrivacyRoute
+  '/app/settings/routing': typeof AppSettingsRoutingRoute
+  '/app/settings/workspace': typeof AppSettingsWorkspaceRoute
   '/app/billing': typeof AppBillingIndexRoute
   '/app/projects': typeof AppProjectsIndexRoute
+  '/app/settings': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/policy': typeof AdminPolicyRoute
+  '/admin/users': typeof AdminUsersRoute
   '/app/billing': typeof AppBillingRouteWithChildren
+  '/app/settings': typeof AppSettingsRouteWithChildren
   '/billing/cancel': typeof BillingCancelRoute
   '/billing/success': typeof BillingSuccessRoute
   '/checkout/$session': typeof CheckoutSessionRoute
+  '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/app/billing/invoices': typeof AppBillingInvoicesRoute
   '/app/billing/members': typeof AppBillingMembersRoute
   '/app/billing/usage': typeof AppBillingUsageRoute
   '/app/projects/$id': typeof AppProjectsIdRoute
   '/app/projects/new': typeof AppProjectsNewRoute
+  '/app/settings/credentials': typeof AppSettingsCredentialsRoute
+  '/app/settings/danger': typeof AppSettingsDangerRoute
+  '/app/settings/members': typeof AppSettingsMembersRoute
+  '/app/settings/notifications': typeof AppSettingsNotificationsRoute
+  '/app/settings/privacy': typeof AppSettingsPrivacyRoute
+  '/app/settings/routing': typeof AppSettingsRoutingRoute
+  '/app/settings/workspace': typeof AppSettingsWorkspaceRoute
   '/app/billing/': typeof AppBillingIndexRoute
   '/app/projects/': typeof AppProjectsIndexRoute
+  '/app/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/app'
     | '/auth'
     | '/pricing'
     | '/reset-password'
+    | '/admin/audit'
+    | '/admin/policy'
+    | '/admin/users'
     | '/app/billing'
+    | '/app/settings'
     | '/billing/cancel'
     | '/billing/success'
     | '/checkout/$session'
+    | '/admin/'
     | '/app/'
     | '/app/billing/invoices'
     | '/app/billing/members'
     | '/app/billing/usage'
     | '/app/projects/$id'
     | '/app/projects/new'
+    | '/app/settings/credentials'
+    | '/app/settings/danger'
+    | '/app/settings/members'
+    | '/app/settings/notifications'
+    | '/app/settings/privacy'
+    | '/app/settings/routing'
+    | '/app/settings/workspace'
     | '/app/billing/'
     | '/app/projects/'
+    | '/app/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/pricing'
     | '/reset-password'
+    | '/admin/audit'
+    | '/admin/policy'
+    | '/admin/users'
     | '/billing/cancel'
     | '/billing/success'
     | '/checkout/$session'
+    | '/admin'
     | '/app'
     | '/app/billing/invoices'
     | '/app/billing/members'
     | '/app/billing/usage'
     | '/app/projects/$id'
     | '/app/projects/new'
+    | '/app/settings/credentials'
+    | '/app/settings/danger'
+    | '/app/settings/members'
+    | '/app/settings/notifications'
+    | '/app/settings/privacy'
+    | '/app/settings/routing'
+    | '/app/settings/workspace'
     | '/app/billing'
     | '/app/projects'
+    | '/app/settings'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/app'
     | '/auth'
     | '/pricing'
     | '/reset-password'
+    | '/admin/audit'
+    | '/admin/policy'
+    | '/admin/users'
     | '/app/billing'
+    | '/app/settings'
     | '/billing/cancel'
     | '/billing/success'
     | '/checkout/$session'
+    | '/admin/'
     | '/app/'
     | '/app/billing/invoices'
     | '/app/billing/members'
     | '/app/billing/usage'
     | '/app/projects/$id'
     | '/app/projects/new'
+    | '/app/settings/credentials'
+    | '/app/settings/danger'
+    | '/app/settings/members'
+    | '/app/settings/notifications'
+    | '/app/settings/privacy'
+    | '/app/settings/routing'
+    | '/app/settings/workspace'
     | '/app/billing/'
     | '/app/projects/'
+    | '/app/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
   PricingRoute: typeof PricingRoute
@@ -268,6 +434,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -281,6 +454,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/checkout/$session': {
       id: '/checkout/$session'
@@ -303,12 +483,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BillingCancelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/billing': {
       id: '/app/billing'
       path: '/billing'
       fullPath: '/app/billing'
       preLoaderRoute: typeof AppBillingRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/policy': {
+      id: '/admin/policy'
+      path: '/policy'
+      fullPath: '/admin/policy'
+      preLoaderRoute: typeof AdminPolicyRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/app/settings/': {
+      id: '/app/settings/'
+      path: '/'
+      fullPath: '/app/settings/'
+      preLoaderRoute: typeof AppSettingsIndexRouteImport
+      parentRoute: typeof AppSettingsRoute
     }
     '/app/projects/': {
       id: '/app/projects/'
@@ -323,6 +538,55 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/billing/'
       preLoaderRoute: typeof AppBillingIndexRouteImport
       parentRoute: typeof AppBillingRoute
+    }
+    '/app/settings/workspace': {
+      id: '/app/settings/workspace'
+      path: '/workspace'
+      fullPath: '/app/settings/workspace'
+      preLoaderRoute: typeof AppSettingsWorkspaceRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/app/settings/routing': {
+      id: '/app/settings/routing'
+      path: '/routing'
+      fullPath: '/app/settings/routing'
+      preLoaderRoute: typeof AppSettingsRoutingRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/app/settings/privacy': {
+      id: '/app/settings/privacy'
+      path: '/privacy'
+      fullPath: '/app/settings/privacy'
+      preLoaderRoute: typeof AppSettingsPrivacyRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/app/settings/notifications': {
+      id: '/app/settings/notifications'
+      path: '/notifications'
+      fullPath: '/app/settings/notifications'
+      preLoaderRoute: typeof AppSettingsNotificationsRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/app/settings/members': {
+      id: '/app/settings/members'
+      path: '/members'
+      fullPath: '/app/settings/members'
+      preLoaderRoute: typeof AppSettingsMembersRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/app/settings/danger': {
+      id: '/app/settings/danger'
+      path: '/danger'
+      fullPath: '/app/settings/danger'
+      preLoaderRoute: typeof AppSettingsDangerRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/app/settings/credentials': {
+      id: '/app/settings/credentials'
+      path: '/credentials'
+      fullPath: '/app/settings/credentials'
+      preLoaderRoute: typeof AppSettingsCredentialsRouteImport
+      parentRoute: typeof AppSettingsRoute
     }
     '/app/projects/new': {
       id: '/app/projects/new'
@@ -362,6 +626,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminAuditRoute: typeof AdminAuditRoute
+  AdminPolicyRoute: typeof AdminPolicyRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditRoute: AdminAuditRoute,
+  AdminPolicyRoute: AdminPolicyRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 interface AppBillingRouteChildren {
   AppBillingInvoicesRoute: typeof AppBillingInvoicesRoute
   AppBillingMembersRoute: typeof AppBillingMembersRoute
@@ -380,8 +660,35 @@ const AppBillingRouteWithChildren = AppBillingRoute._addFileChildren(
   AppBillingRouteChildren,
 )
 
+interface AppSettingsRouteChildren {
+  AppSettingsCredentialsRoute: typeof AppSettingsCredentialsRoute
+  AppSettingsDangerRoute: typeof AppSettingsDangerRoute
+  AppSettingsMembersRoute: typeof AppSettingsMembersRoute
+  AppSettingsNotificationsRoute: typeof AppSettingsNotificationsRoute
+  AppSettingsPrivacyRoute: typeof AppSettingsPrivacyRoute
+  AppSettingsRoutingRoute: typeof AppSettingsRoutingRoute
+  AppSettingsWorkspaceRoute: typeof AppSettingsWorkspaceRoute
+  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
+}
+
+const AppSettingsRouteChildren: AppSettingsRouteChildren = {
+  AppSettingsCredentialsRoute: AppSettingsCredentialsRoute,
+  AppSettingsDangerRoute: AppSettingsDangerRoute,
+  AppSettingsMembersRoute: AppSettingsMembersRoute,
+  AppSettingsNotificationsRoute: AppSettingsNotificationsRoute,
+  AppSettingsPrivacyRoute: AppSettingsPrivacyRoute,
+  AppSettingsRoutingRoute: AppSettingsRoutingRoute,
+  AppSettingsWorkspaceRoute: AppSettingsWorkspaceRoute,
+  AppSettingsIndexRoute: AppSettingsIndexRoute,
+}
+
+const AppSettingsRouteWithChildren = AppSettingsRoute._addFileChildren(
+  AppSettingsRouteChildren,
+)
+
 interface AppRouteChildren {
   AppBillingRoute: typeof AppBillingRouteWithChildren
+  AppSettingsRoute: typeof AppSettingsRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
   AppProjectsIdRoute: typeof AppProjectsIdRoute
   AppProjectsNewRoute: typeof AppProjectsNewRoute
@@ -390,6 +697,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppBillingRoute: AppBillingRouteWithChildren,
+  AppSettingsRoute: AppSettingsRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
   AppProjectsIdRoute: AppProjectsIdRoute,
   AppProjectsNewRoute: AppProjectsNewRoute,
@@ -400,6 +708,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
   PricingRoute: PricingRoute,
