@@ -31,7 +31,7 @@ export function LowBalanceBanner({
           <p className="mt-0.5 text-xs text-mute">
             {insufficient
               ? "New generations are paused until you top up or upgrade. In-flight work won't be charged on provider failures."
-              : `You have ${available} CP left. Top up to keep the clerks dispatching without interruption.`}
+              : `You have ${formatCP(available)} CP left. Top up to keep the clerks dispatching without interruption.`}
           </p>
         </div>
       </div>
