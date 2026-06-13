@@ -101,12 +101,14 @@ export const mockApi = {
 
   // creation
   estimate(input: { kind: NewProjectInput["kind"]; model: ModelTier; budget: number }): EstimateRange {
-    const baseMin = input.kind === "clone" ? 14 : 8;
-    const baseMax = input.kind === "clone" ? 40 : 28;
-    const mult = input.model === "premium" ? 1.8 : input.model === "fast" ? 0.6 : input.model === "recommended" ? 1.15 : 1;
+    // Fractional Coding Points (0.1 step). Server is authoritative.
+    const baseMin = input.kind === "clone" ? 1.8 : 1.5;
+    const baseMax = input.kind === "clone" ? 3.5 : 3.0;
+    const mult = input.model === "premium" ? 1.4 : input.model === "fast" ? 0.7 : input.model === "recommended" ? 1.0 : 1.1;
+    const round1 = (n: number) => Math.round(n * 10) / 10;
     return {
-      min: Math.round(baseMin * mult),
-      max: Math.min(Math.round(baseMax * mult), input.budget),
+      min: round1(baseMin * mult),
+      max: round1(Math.min(baseMax * mult, input.budget)),
       etaSec: input.model === "premium" ? 32 : input.model === "fast" ? 9 : 14,
     };
   },
