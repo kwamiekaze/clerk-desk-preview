@@ -5,12 +5,12 @@ export const Route = createFileRoute("/app/billing")({
   component: BillingLayout,
 });
 
-const TABS = [
+const TABS: Array<{ to: "/app/billing" | "/app/billing/usage" | "/app/billing/invoices" | "/app/billing/members"; label: string; exact?: boolean }> = [
   { to: "/app/billing", label: "Overview", exact: true },
   { to: "/app/billing/usage", label: "Usage & ledger" },
   { to: "/app/billing/invoices", label: "Invoices" },
   { to: "/app/billing/members", label: "Members" },
-] as const;
+];
 
 function BillingLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });

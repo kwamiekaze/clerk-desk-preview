@@ -15,9 +15,17 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as CheckoutSessionRouteImport } from './routes/checkout.$session'
+import { Route as BillingSuccessRouteImport } from './routes/billing.success'
+import { Route as BillingCancelRouteImport } from './routes/billing.cancel'
+import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppProjectsIndexRouteImport } from './routes/app.projects.index'
+import { Route as AppBillingIndexRouteImport } from './routes/app.billing.index'
 import { Route as AppProjectsNewRouteImport } from './routes/app.projects.new'
 import { Route as AppProjectsIdRouteImport } from './routes/app.projects.$id'
+import { Route as AppBillingUsageRouteImport } from './routes/app.billing.usage'
+import { Route as AppBillingMembersRouteImport } from './routes/app.billing.members'
+import { Route as AppBillingInvoicesRouteImport } from './routes/app.billing.invoices'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -49,10 +57,35 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const CheckoutSessionRoute = CheckoutSessionRouteImport.update({
+  id: '/checkout/$session',
+  path: '/checkout/$session',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BillingSuccessRoute = BillingSuccessRouteImport.update({
+  id: '/billing/success',
+  path: '/billing/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BillingCancelRoute = BillingCancelRouteImport.update({
+  id: '/billing/cancel',
+  path: '/billing/cancel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppBillingRoute = AppBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppProjectsIndexRoute = AppProjectsIndexRouteImport.update({
   id: '/projects/',
   path: '/projects/',
   getParentRoute: () => AppRoute,
+} as any)
+const AppBillingIndexRoute = AppBillingIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppBillingRoute,
 } as any)
 const AppProjectsNewRoute = AppProjectsNewRouteImport.update({
   id: '/projects/new',
@@ -64,6 +97,21 @@ const AppProjectsIdRoute = AppProjectsIdRouteImport.update({
   path: '/projects/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBillingUsageRoute = AppBillingUsageRouteImport.update({
+  id: '/usage',
+  path: '/usage',
+  getParentRoute: () => AppBillingRoute,
+} as any)
+const AppBillingMembersRoute = AppBillingMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => AppBillingRoute,
+} as any)
+const AppBillingInvoicesRoute = AppBillingInvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
+  getParentRoute: () => AppBillingRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -71,9 +119,17 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/app/billing': typeof AppBillingRouteWithChildren
+  '/billing/cancel': typeof BillingCancelRoute
+  '/billing/success': typeof BillingSuccessRoute
+  '/checkout/$session': typeof CheckoutSessionRoute
   '/app/': typeof AppIndexRoute
+  '/app/billing/invoices': typeof AppBillingInvoicesRoute
+  '/app/billing/members': typeof AppBillingMembersRoute
+  '/app/billing/usage': typeof AppBillingUsageRoute
   '/app/projects/$id': typeof AppProjectsIdRoute
   '/app/projects/new': typeof AppProjectsNewRoute
+  '/app/billing/': typeof AppBillingIndexRoute
   '/app/projects/': typeof AppProjectsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -81,9 +137,16 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/billing/cancel': typeof BillingCancelRoute
+  '/billing/success': typeof BillingSuccessRoute
+  '/checkout/$session': typeof CheckoutSessionRoute
   '/app': typeof AppIndexRoute
+  '/app/billing/invoices': typeof AppBillingInvoicesRoute
+  '/app/billing/members': typeof AppBillingMembersRoute
+  '/app/billing/usage': typeof AppBillingUsageRoute
   '/app/projects/$id': typeof AppProjectsIdRoute
   '/app/projects/new': typeof AppProjectsNewRoute
+  '/app/billing': typeof AppBillingIndexRoute
   '/app/projects': typeof AppProjectsIndexRoute
 }
 export interface FileRoutesById {
@@ -93,9 +156,17 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/app/billing': typeof AppBillingRouteWithChildren
+  '/billing/cancel': typeof BillingCancelRoute
+  '/billing/success': typeof BillingSuccessRoute
+  '/checkout/$session': typeof CheckoutSessionRoute
   '/app/': typeof AppIndexRoute
+  '/app/billing/invoices': typeof AppBillingInvoicesRoute
+  '/app/billing/members': typeof AppBillingMembersRoute
+  '/app/billing/usage': typeof AppBillingUsageRoute
   '/app/projects/$id': typeof AppProjectsIdRoute
   '/app/projects/new': typeof AppProjectsNewRoute
+  '/app/billing/': typeof AppBillingIndexRoute
   '/app/projects/': typeof AppProjectsIndexRoute
 }
 export interface FileRouteTypes {
@@ -106,9 +177,17 @@ export interface FileRouteTypes {
     | '/auth'
     | '/pricing'
     | '/reset-password'
+    | '/app/billing'
+    | '/billing/cancel'
+    | '/billing/success'
+    | '/checkout/$session'
     | '/app/'
+    | '/app/billing/invoices'
+    | '/app/billing/members'
+    | '/app/billing/usage'
     | '/app/projects/$id'
     | '/app/projects/new'
+    | '/app/billing/'
     | '/app/projects/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -116,9 +195,16 @@ export interface FileRouteTypes {
     | '/auth'
     | '/pricing'
     | '/reset-password'
+    | '/billing/cancel'
+    | '/billing/success'
+    | '/checkout/$session'
     | '/app'
+    | '/app/billing/invoices'
+    | '/app/billing/members'
+    | '/app/billing/usage'
     | '/app/projects/$id'
     | '/app/projects/new'
+    | '/app/billing'
     | '/app/projects'
   id:
     | '__root__'
@@ -127,9 +213,17 @@ export interface FileRouteTypes {
     | '/auth'
     | '/pricing'
     | '/reset-password'
+    | '/app/billing'
+    | '/billing/cancel'
+    | '/billing/success'
+    | '/checkout/$session'
     | '/app/'
+    | '/app/billing/invoices'
+    | '/app/billing/members'
+    | '/app/billing/usage'
     | '/app/projects/$id'
     | '/app/projects/new'
+    | '/app/billing/'
     | '/app/projects/'
   fileRoutesById: FileRoutesById
 }
@@ -139,6 +233,9 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   PricingRoute: typeof PricingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  BillingCancelRoute: typeof BillingCancelRoute
+  BillingSuccessRoute: typeof BillingSuccessRoute
+  CheckoutSessionRoute: typeof CheckoutSessionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -185,12 +282,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/checkout/$session': {
+      id: '/checkout/$session'
+      path: '/checkout/$session'
+      fullPath: '/checkout/$session'
+      preLoaderRoute: typeof CheckoutSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/billing/success': {
+      id: '/billing/success'
+      path: '/billing/success'
+      fullPath: '/billing/success'
+      preLoaderRoute: typeof BillingSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/billing/cancel': {
+      id: '/billing/cancel'
+      path: '/billing/cancel'
+      fullPath: '/billing/cancel'
+      preLoaderRoute: typeof BillingCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/billing': {
+      id: '/app/billing'
+      path: '/billing'
+      fullPath: '/app/billing'
+      preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/projects/': {
       id: '/app/projects/'
       path: '/projects'
       fullPath: '/app/projects/'
       preLoaderRoute: typeof AppProjectsIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/app/billing/': {
+      id: '/app/billing/'
+      path: '/'
+      fullPath: '/app/billing/'
+      preLoaderRoute: typeof AppBillingIndexRouteImport
+      parentRoute: typeof AppBillingRoute
     }
     '/app/projects/new': {
       id: '/app/projects/new'
@@ -206,10 +338,50 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProjectsIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/billing/usage': {
+      id: '/app/billing/usage'
+      path: '/usage'
+      fullPath: '/app/billing/usage'
+      preLoaderRoute: typeof AppBillingUsageRouteImport
+      parentRoute: typeof AppBillingRoute
+    }
+    '/app/billing/members': {
+      id: '/app/billing/members'
+      path: '/members'
+      fullPath: '/app/billing/members'
+      preLoaderRoute: typeof AppBillingMembersRouteImport
+      parentRoute: typeof AppBillingRoute
+    }
+    '/app/billing/invoices': {
+      id: '/app/billing/invoices'
+      path: '/invoices'
+      fullPath: '/app/billing/invoices'
+      preLoaderRoute: typeof AppBillingInvoicesRouteImport
+      parentRoute: typeof AppBillingRoute
+    }
   }
 }
 
+interface AppBillingRouteChildren {
+  AppBillingInvoicesRoute: typeof AppBillingInvoicesRoute
+  AppBillingMembersRoute: typeof AppBillingMembersRoute
+  AppBillingUsageRoute: typeof AppBillingUsageRoute
+  AppBillingIndexRoute: typeof AppBillingIndexRoute
+}
+
+const AppBillingRouteChildren: AppBillingRouteChildren = {
+  AppBillingInvoicesRoute: AppBillingInvoicesRoute,
+  AppBillingMembersRoute: AppBillingMembersRoute,
+  AppBillingUsageRoute: AppBillingUsageRoute,
+  AppBillingIndexRoute: AppBillingIndexRoute,
+}
+
+const AppBillingRouteWithChildren = AppBillingRoute._addFileChildren(
+  AppBillingRouteChildren,
+)
+
 interface AppRouteChildren {
+  AppBillingRoute: typeof AppBillingRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
   AppProjectsIdRoute: typeof AppProjectsIdRoute
   AppProjectsNewRoute: typeof AppProjectsNewRoute
@@ -217,6 +389,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppBillingRoute: AppBillingRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
   AppProjectsIdRoute: AppProjectsIdRoute,
   AppProjectsNewRoute: AppProjectsNewRoute,
@@ -231,17 +404,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   PricingRoute: PricingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  BillingCancelRoute: BillingCancelRoute,
+  BillingSuccessRoute: BillingSuccessRoute,
+  CheckoutSessionRoute: CheckoutSessionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
