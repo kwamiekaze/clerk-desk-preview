@@ -12,7 +12,6 @@ import { Security } from "@/components/site/Security";
 import { Pricing } from "@/components/site/Pricing";
 import { FinalCTA } from "@/components/site/FinalCTA";
 import { MatrixRain } from "@/components/fx/MatrixRain";
-import { HERO_VIDEO_URL } from "@/lib/media-constants";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,17 +36,7 @@ export const Route = createFileRoute("/")({
 function LandingPage() {
   return (
     <div className="relative min-h-screen bg-background text-foreground">
-      <MatrixRain className="pointer-events-none fixed inset-0 z-0 h-full w-full opacity-[0.14]" density={1} />
-      {HERO_VIDEO_URL && (
-        <video
-          src={HERO_VIDEO_URL}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="pointer-events-none fixed inset-0 z-0 h-full w-full object-cover opacity-25"
-        />
-      )}
+      <MatrixRain className="pointer-events-none fixed inset-0 z-0 h-full w-full opacity-[0.10]" density={1} />
       <div className="relative z-10">
         <Header />
         <main>
