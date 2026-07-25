@@ -22,6 +22,7 @@ import { Route as BillingSuccessRouteImport } from './routes/billing.success'
 import { Route as BillingCancelRouteImport } from './routes/billing.cancel'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
+import { Route as AppAdminRouteImport } from './routes/app.admin'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminPolicyRouteImport } from './routes/admin.policy'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
@@ -40,6 +41,7 @@ import { Route as AppProjectsIdRouteImport } from './routes/app.projects.$id'
 import { Route as AppBillingUsageRouteImport } from './routes/app.billing.usage'
 import { Route as AppBillingMembersRouteImport } from './routes/app.billing.members'
 import { Route as AppBillingInvoicesRouteImport } from './routes/app.billing.invoices'
+import { Route as ApiPublicPreviewIdSplatRouteImport } from './routes/api/public/preview.$id.$'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -104,6 +106,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
 const AppBillingRoute = AppBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -197,6 +204,11 @@ const AppBillingInvoicesRoute = AppBillingInvoicesRouteImport.update({
   path: '/invoices',
   getParentRoute: () => AppBillingRoute,
 } as any)
+const ApiPublicPreviewIdSplatRoute = ApiPublicPreviewIdSplatRouteImport.update({
+  id: '/api/public/preview/$id/$',
+  path: '/api/public/preview/$id/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -208,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/admin/audit': typeof AdminAuditRoute
   '/admin/policy': typeof AdminPolicyRoute
   '/admin/users': typeof AdminUsersRoute
+  '/app/admin': typeof AppAdminRoute
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/settings': typeof AppSettingsRouteWithChildren
   '/billing/cancel': typeof BillingCancelRoute
@@ -230,6 +243,7 @@ export interface FileRoutesByFullPath {
   '/app/billing/': typeof AppBillingIndexRoute
   '/app/projects/': typeof AppProjectsIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
+  '/api/public/preview/$id/$': typeof ApiPublicPreviewIdSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -239,6 +253,7 @@ export interface FileRoutesByTo {
   '/admin/audit': typeof AdminAuditRoute
   '/admin/policy': typeof AdminPolicyRoute
   '/admin/users': typeof AdminUsersRoute
+  '/app/admin': typeof AppAdminRoute
   '/billing/cancel': typeof BillingCancelRoute
   '/billing/success': typeof BillingSuccessRoute
   '/checkout/$session': typeof CheckoutSessionRoute
@@ -259,6 +274,7 @@ export interface FileRoutesByTo {
   '/app/billing': typeof AppBillingIndexRoute
   '/app/projects': typeof AppProjectsIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
+  '/api/public/preview/$id/$': typeof ApiPublicPreviewIdSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -271,6 +287,7 @@ export interface FileRoutesById {
   '/admin/audit': typeof AdminAuditRoute
   '/admin/policy': typeof AdminPolicyRoute
   '/admin/users': typeof AdminUsersRoute
+  '/app/admin': typeof AppAdminRoute
   '/app/billing': typeof AppBillingRouteWithChildren
   '/app/settings': typeof AppSettingsRouteWithChildren
   '/billing/cancel': typeof BillingCancelRoute
@@ -293,6 +310,7 @@ export interface FileRoutesById {
   '/app/billing/': typeof AppBillingIndexRoute
   '/app/projects/': typeof AppProjectsIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
+  '/api/public/preview/$id/$': typeof ApiPublicPreviewIdSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -306,6 +324,7 @@ export interface FileRouteTypes {
     | '/admin/audit'
     | '/admin/policy'
     | '/admin/users'
+    | '/app/admin'
     | '/app/billing'
     | '/app/settings'
     | '/billing/cancel'
@@ -328,6 +347,7 @@ export interface FileRouteTypes {
     | '/app/billing/'
     | '/app/projects/'
     | '/app/settings/'
+    | '/api/public/preview/$id/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -337,6 +357,7 @@ export interface FileRouteTypes {
     | '/admin/audit'
     | '/admin/policy'
     | '/admin/users'
+    | '/app/admin'
     | '/billing/cancel'
     | '/billing/success'
     | '/checkout/$session'
@@ -357,6 +378,7 @@ export interface FileRouteTypes {
     | '/app/billing'
     | '/app/projects'
     | '/app/settings'
+    | '/api/public/preview/$id/$'
   id:
     | '__root__'
     | '/'
@@ -368,6 +390,7 @@ export interface FileRouteTypes {
     | '/admin/audit'
     | '/admin/policy'
     | '/admin/users'
+    | '/app/admin'
     | '/app/billing'
     | '/app/settings'
     | '/billing/cancel'
@@ -390,6 +413,7 @@ export interface FileRouteTypes {
     | '/app/billing/'
     | '/app/projects/'
     | '/app/settings/'
+    | '/api/public/preview/$id/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -402,6 +426,7 @@ export interface RootRouteChildren {
   BillingCancelRoute: typeof BillingCancelRoute
   BillingSuccessRoute: typeof BillingSuccessRoute
   CheckoutSessionRoute: typeof CheckoutSessionRoute
+  ApiPublicPreviewIdSplatRoute: typeof ApiPublicPreviewIdSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -495,6 +520,13 @@ declare module '@tanstack/react-router' {
       path: '/billing'
       fullPath: '/app/billing'
       preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/admin': {
+      id: '/app/admin'
+      path: '/admin'
+      fullPath: '/app/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
     '/admin/users': {
@@ -623,6 +655,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBillingInvoicesRouteImport
       parentRoute: typeof AppBillingRoute
     }
+    '/api/public/preview/$id/$': {
+      id: '/api/public/preview/$id/$'
+      path: '/api/public/preview/$id/$'
+      fullPath: '/api/public/preview/$id/$'
+      preLoaderRoute: typeof ApiPublicPreviewIdSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -687,6 +726,7 @@ const AppSettingsRouteWithChildren = AppSettingsRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
   AppBillingRoute: typeof AppBillingRouteWithChildren
   AppSettingsRoute: typeof AppSettingsRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
@@ -696,6 +736,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
   AppBillingRoute: AppBillingRouteWithChildren,
   AppSettingsRoute: AppSettingsRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
@@ -716,6 +757,7 @@ const rootRouteChildren: RootRouteChildren = {
   BillingCancelRoute: BillingCancelRoute,
   BillingSuccessRoute: BillingSuccessRoute,
   CheckoutSessionRoute: CheckoutSessionRoute,
+  ApiPublicPreviewIdSplatRoute: ApiPublicPreviewIdSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

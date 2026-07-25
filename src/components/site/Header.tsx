@@ -32,13 +32,13 @@ export function Header() {
 
         <div className="hidden items-center gap-2 md:flex">
           <a
-            href="#cta"
+            href="/auth"
             className="rounded-md px-3 py-1.5 text-sm text-mute transition-colors hover:text-foreground"
           >
             Sign in
           </a>
           <a
-            href="#cta"
+            href="/auth?mode=signup"
             className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Open desk
