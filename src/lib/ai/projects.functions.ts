@@ -9,10 +9,15 @@ import {
   SYSTEM_CLONE,
   type ChatMessage,
   type ParsedFile,
+  type Attachment,
 } from "./provider.server";
 
-const FREE_PROJECT_CAP = 5;
-const FREE_MONTHLY_GENERATE_CAP = 5;
+const FREE_PROJECT_CAP = 10;
+const FREE_MONTHLY_GENERATE_CAP = 25;
+
+const AttachmentSchema = z.array(
+  z.object({ path: z.string().max(500), url: z.string().max(1200) }),
+).max(4).optional();
 
 async function enforceFreePlanLimits(
   supabase: import("@supabase/supabase-js").SupabaseClient,
@@ -41,6 +46,25 @@ async function enforceFreePlanLimits(
     throw new Error(`Free plan is limited to ${FREE_MONTHLY_GENERATE_CAP} builds per 30 days. Upgrade to Pro for unlimited.`);
   }
   void action;
+}
+
+function toAttachments(
+  incoming: Array<{ path: string; url: string }> | undefined,
+  origin: string,
+): Attachment[] {
+  if (!incoming || incoming.length === 0) return [];
+  return incoming.map((a) => {
+    const abs = a.url.startsWith("http") ? a.url : `${origin}${a.url}`;
+    return { url: a.url, absoluteUrl: abs };
+  });
+}
+
+function requestOrigin(): string {
+  try {
+    const url = process.env.PUBLIC_APP_URL;
+    if (url) return url.replace(/\/+$/, "");
+  } catch { /* ignore */ }
+  return "https://codingclerks.com";
 }
 
 async function writeFiles(
@@ -78,7 +102,7 @@ export const getProject = createServerFn({ method: "POST" })
     const [{ data: project, error: pe }, files, messages] = await Promise.all([
       context.supabase
         .from("projects")
-        .select("id,title,kind,status,created_at,updated_at,user_id")
+        .select("id,title,kind,status,created_at,updated_at,user_id,github_repo")
         .eq("id", data.id)
         .maybeSingle(),
       context.supabase
@@ -104,11 +128,17 @@ export const getProject = createServerFn({ method: "POST" })
 // ---------- generateProject ----------
 export const generateProject = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(z.object({ prompt: z.string().min(3).max(4000) }).parse)
+  .inputValidator(
+    z.object({
+      prompt: z.string().min(3).max(4000),
+      attachments: AttachmentSchema,
+    }).parse,
+  )
   .handler(async ({ data, context }) => {
     await enforceFreePlanLimits(context.supabase, context.userId, "generate");
+    const atts = toAttachments(data.attachments, requestOrigin());
 
-    const raw = await generateText(SYSTEM_GENERATE, [{ role: "user", content: data.prompt }]);
+    const raw = await generateText(SYSTEM_GENERATE, [{ role: "user", content: data.prompt }], { attachments: atts });
     const parsed = parseModelJson(raw);
 
     const { data: proj, error: pe } = await context.supabase
@@ -119,8 +149,9 @@ export const generateProject = createServerFn({ method: "POST" })
     if (pe || !proj) throw new Error(pe?.message ?? "Failed to create project.");
 
     await writeFiles(context.supabase, proj.id, parsed.files, false);
+    const userMsg = data.prompt + (atts.length ? `\n\n[attached ${atts.length} image${atts.length > 1 ? "s" : ""}]` : "");
     await context.supabase.from("project_messages").insert([
-      { project_id: proj.id, role: "user", content: data.prompt },
+      { project_id: proj.id, role: "user", content: userMsg },
       { project_id: proj.id, role: "assistant", content: parsed.summary },
     ]);
     await context.supabase.from("usage_events").insert({
@@ -135,7 +166,13 @@ export const generateProject = createServerFn({ method: "POST" })
 // ---------- editProject ----------
 export const editProject = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(z.object({ id: z.string().uuid(), instruction: z.string().min(2).max(4000) }).parse)
+  .inputValidator(
+    z.object({
+      id: z.string().uuid(),
+      instruction: z.string().min(2).max(4000),
+      attachments: AttachmentSchema,
+    }).parse,
+  )
   .handler(async ({ data, context }) => {
     const { data: proj } = await context.supabase
       .from("projects")
@@ -152,12 +189,13 @@ export const editProject = createServerFn({ method: "POST" })
         .select("path,content")
         .eq("project_id", data.id);
 
+      const atts = toAttachments(data.attachments, requestOrigin());
       const context_json = JSON.stringify({ files: files ?? [] });
       const messages: ChatMessage[] = [
         { role: "user", content: "Current project files:\n" + context_json },
         { role: "user", content: "Edit instruction: " + data.instruction },
       ];
-      const raw = await generateText(SYSTEM_EDIT, messages);
+      const raw = await generateText(SYSTEM_EDIT, messages, { attachments: atts });
       const parsed = parseModelJson(raw);
 
       await writeFiles(context.supabase, data.id, parsed.files, true);
@@ -165,8 +203,9 @@ export const editProject = createServerFn({ method: "POST" })
         .from("projects")
         .update({ status: "ready", title: parsed.title, updated_at: new Date().toISOString() })
         .eq("id", data.id);
+      const userMsg = data.instruction + (atts.length ? `\n\n[attached ${atts.length} image${atts.length > 1 ? "s" : ""}]` : "");
       await context.supabase.from("project_messages").insert([
-        { project_id: data.id, role: "user", content: data.instruction },
+        { project_id: data.id, role: "user", content: userMsg },
         { project_id: data.id, role: "assistant", content: parsed.summary },
       ]);
       await context.supabase.from("usage_events").insert({
@@ -219,19 +258,26 @@ export const cloneProject = createServerFn({ method: "POST" })
   .inputValidator(
     z.object({
       url: z.string().url().refine((u) => u.startsWith("http://") || u.startsWith("https://"), "Must be http(s) URL"),
+      notes: z.string().max(2000).optional(),
+      attachments: AttachmentSchema,
     }).parse,
   )
   .handler(async ({ data, context }) => {
     await enforceFreePlanLimits(context.supabase, context.userId, "clone");
     const scraped = await fetchSiteContent(data.url);
+    const atts = toAttachments(data.attachments, requestOrigin());
 
-    const raw = await generateText(SYSTEM_CLONE, [
-      {
-        role: "user",
-        content:
-          `Source URL: ${scraped.url}\nPage title: ${scraped.title}\n\nExtracted text content:\n${scraped.text}\n\nRecreate this site as an original modern static app.`,
-      },
-    ]);
+    const raw = await generateText(
+      SYSTEM_CLONE,
+      [
+        {
+          role: "user",
+          content:
+            `Source URL: ${scraped.url}\nPage title: ${scraped.title}\n\nExtracted text content:\n${scraped.text}\n\n${data.notes ? "Additional notes from the user: " + data.notes + "\n\n" : ""}Recreate this site as an original modern static app.`,
+        },
+      ],
+      { attachments: atts },
+    );
     const parsed = parseModelJson(raw);
 
     const { data: proj, error: pe } = await context.supabase
@@ -248,7 +294,7 @@ export const cloneProject = createServerFn({ method: "POST" })
 
     await writeFiles(context.supabase, proj.id, parsed.files, false);
     await context.supabase.from("project_messages").insert([
-      { project_id: proj.id, role: "user", content: `Clone ${data.url}` },
+      { project_id: proj.id, role: "user", content: `Clone ${data.url}` + (data.notes ? "\n\n" + data.notes : "") },
       { project_id: proj.id, role: "assistant", content: parsed.summary },
     ]);
     await context.supabase.from("usage_events").insert({
@@ -298,7 +344,7 @@ export const getUsage = createServerFn({ method: "GET" })
         .eq("user_id", context.userId)
         .in("kind", ["generate", "clone"])
         .gte("created_at", since),
-      context.supabase.from("profiles").select("plan,role,email").eq("id", context.userId).maybeSingle(),
+      context.supabase.from("profiles").select("plan,role,email,display_name,avatar_url").eq("id", context.userId).maybeSingle(),
       context.supabase
         .from("projects")
         .select("id", { count: "exact", head: true })
@@ -312,6 +358,8 @@ export const getUsage = createServerFn({ method: "GET" })
       plan: profile?.plan ?? "free",
       role: profile?.role ?? "user",
       email: profile?.email ?? null,
+      displayName: profile?.display_name ?? null,
+      avatarUrl: profile?.avatar_url ?? null,
     };
   });
 

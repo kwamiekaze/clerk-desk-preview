@@ -14,6 +14,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as SlugRouteImport } from './routes/$slug'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
@@ -26,6 +27,7 @@ import { Route as AppAdminRouteImport } from './routes/app.admin'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminPolicyRouteImport } from './routes/admin.policy'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
+import { Route as SlugSplatRouteImport } from './routes/$slug.$'
 import { Route as AppSettingsIndexRouteImport } from './routes/app.settings.index'
 import { Route as AppProjectsIndexRouteImport } from './routes/app.projects.index'
 import { Route as AppBillingIndexRouteImport } from './routes/app.billing.index'
@@ -42,6 +44,7 @@ import { Route as AppBillingUsageRouteImport } from './routes/app.billing.usage'
 import { Route as AppBillingMembersRouteImport } from './routes/app.billing.members'
 import { Route as AppBillingInvoicesRouteImport } from './routes/app.billing.invoices'
 import { Route as ApiPublicPreviewIdSplatRouteImport } from './routes/api/public/preview.$id.$'
+import { Route as ApiPublicImgBucketSplatRouteImport } from './routes/api/public/img.$bucket.$'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -66,6 +69,11 @@ const AppRoute = AppRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SlugRoute = SlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -127,6 +135,11 @@ const AdminAuditRoute = AdminAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
   getParentRoute: () => AdminRoute,
+} as any)
+const SlugSplatRoute = SlugSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => SlugRoute,
 } as any)
 const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   id: '/',
@@ -209,14 +222,21 @@ const ApiPublicPreviewIdSplatRoute = ApiPublicPreviewIdSplatRouteImport.update({
   path: '/api/public/preview/$id/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicImgBucketSplatRoute = ApiPublicImgBucketSplatRouteImport.update({
+  id: '/api/public/img/$bucket/$',
+  path: '/api/public/img/$bucket/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$slug': typeof SlugRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/$slug/$': typeof SlugSplatRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/policy': typeof AdminPolicyRoute
   '/admin/users': typeof AdminUsersRoute
@@ -243,13 +263,16 @@ export interface FileRoutesByFullPath {
   '/app/billing/': typeof AppBillingIndexRoute
   '/app/projects/': typeof AppProjectsIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
+  '/api/public/img/$bucket/$': typeof ApiPublicImgBucketSplatRoute
   '/api/public/preview/$id/$': typeof ApiPublicPreviewIdSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$slug': typeof SlugRouteWithChildren
   '/auth': typeof AuthRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/$slug/$': typeof SlugSplatRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/policy': typeof AdminPolicyRoute
   '/admin/users': typeof AdminUsersRoute
@@ -274,16 +297,19 @@ export interface FileRoutesByTo {
   '/app/billing': typeof AppBillingIndexRoute
   '/app/projects': typeof AppProjectsIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
+  '/api/public/img/$bucket/$': typeof ApiPublicImgBucketSplatRoute
   '/api/public/preview/$id/$': typeof ApiPublicPreviewIdSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$slug': typeof SlugRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/$slug/$': typeof SlugSplatRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/policy': typeof AdminPolicyRoute
   '/admin/users': typeof AdminUsersRoute
@@ -310,17 +336,20 @@ export interface FileRoutesById {
   '/app/billing/': typeof AppBillingIndexRoute
   '/app/projects/': typeof AppProjectsIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
+  '/api/public/img/$bucket/$': typeof ApiPublicImgBucketSplatRoute
   '/api/public/preview/$id/$': typeof ApiPublicPreviewIdSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$slug'
     | '/admin'
     | '/app'
     | '/auth'
     | '/pricing'
     | '/reset-password'
+    | '/$slug/$'
     | '/admin/audit'
     | '/admin/policy'
     | '/admin/users'
@@ -347,13 +376,16 @@ export interface FileRouteTypes {
     | '/app/billing/'
     | '/app/projects/'
     | '/app/settings/'
+    | '/api/public/img/$bucket/$'
     | '/api/public/preview/$id/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$slug'
     | '/auth'
     | '/pricing'
     | '/reset-password'
+    | '/$slug/$'
     | '/admin/audit'
     | '/admin/policy'
     | '/admin/users'
@@ -378,15 +410,18 @@ export interface FileRouteTypes {
     | '/app/billing'
     | '/app/projects'
     | '/app/settings'
+    | '/api/public/img/$bucket/$'
     | '/api/public/preview/$id/$'
   id:
     | '__root__'
     | '/'
+    | '/$slug'
     | '/admin'
     | '/app'
     | '/auth'
     | '/pricing'
     | '/reset-password'
+    | '/$slug/$'
     | '/admin/audit'
     | '/admin/policy'
     | '/admin/users'
@@ -413,11 +448,13 @@ export interface FileRouteTypes {
     | '/app/billing/'
     | '/app/projects/'
     | '/app/settings/'
+    | '/api/public/img/$bucket/$'
     | '/api/public/preview/$id/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SlugRoute: typeof SlugRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
@@ -426,6 +463,7 @@ export interface RootRouteChildren {
   BillingCancelRoute: typeof BillingCancelRoute
   BillingSuccessRoute: typeof BillingSuccessRoute
   CheckoutSessionRoute: typeof CheckoutSessionRoute
+  ApiPublicImgBucketSplatRoute: typeof ApiPublicImgBucketSplatRoute
   ApiPublicPreviewIdSplatRoute: typeof ApiPublicPreviewIdSplatRoute
 }
 
@@ -464,6 +502,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$slug': {
+      id: '/$slug'
+      path: '/$slug'
+      fullPath: '/$slug'
+      preLoaderRoute: typeof SlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -549,6 +594,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/audit'
       preLoaderRoute: typeof AdminAuditRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/$slug/$': {
+      id: '/$slug/$'
+      path: '/$'
+      fullPath: '/$slug/$'
+      preLoaderRoute: typeof SlugSplatRouteImport
+      parentRoute: typeof SlugRoute
     }
     '/app/settings/': {
       id: '/app/settings/'
@@ -662,8 +714,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPreviewIdSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/img/$bucket/$': {
+      id: '/api/public/img/$bucket/$'
+      path: '/api/public/img/$bucket/$'
+      fullPath: '/api/public/img/$bucket/$'
+      preLoaderRoute: typeof ApiPublicImgBucketSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
+
+interface SlugRouteChildren {
+  SlugSplatRoute: typeof SlugSplatRoute
+}
+
+const SlugRouteChildren: SlugRouteChildren = {
+  SlugSplatRoute: SlugSplatRoute,
+}
+
+const SlugRouteWithChildren = SlugRoute._addFileChildren(SlugRouteChildren)
 
 interface AdminRouteChildren {
   AdminAuditRoute: typeof AdminAuditRoute
@@ -749,6 +818,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SlugRoute: SlugRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
@@ -757,6 +827,7 @@ const rootRouteChildren: RootRouteChildren = {
   BillingCancelRoute: BillingCancelRoute,
   BillingSuccessRoute: BillingSuccessRoute,
   CheckoutSessionRoute: CheckoutSessionRoute,
+  ApiPublicImgBucketSplatRoute: ApiPublicImgBucketSplatRoute,
   ApiPublicPreviewIdSplatRoute: ApiPublicPreviewIdSplatRoute,
 }
 export const routeTree = rootRouteImport

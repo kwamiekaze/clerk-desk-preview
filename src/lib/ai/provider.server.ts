@@ -2,6 +2,7 @@
 // Selects provider from AI_PROVIDER env; each provider reads its own key.
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
+export type Attachment = { url: string; absoluteUrl?: string; mime?: string };
 
 function envKey(provider: string): { keyName: string; key: string | undefined } {
   switch (provider) {
@@ -24,7 +25,24 @@ async function readError(resp: Response): Promise<string> {
   return `Provider error ${resp.status}: ${body.slice(0, 400)}`;
 }
 
-export async function generateText(system: string, messages: ChatMessage[]): Promise<string> {
+async function fetchImageBase64(url: string): Promise<{ b64: string; mime: string } | null> {
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const mime = r.headers.get("content-type") || "image/png";
+    const buf = new Uint8Array(await r.arrayBuffer());
+    const b64 = typeof Buffer !== "undefined"
+      ? Buffer.from(buf).toString("base64")
+      : (() => { let s = ""; for (let i = 0; i < buf.length; i++) s += String.fromCharCode(buf[i]); return btoa(s); })();
+    return { b64, mime };
+  } catch { return null; }
+}
+
+export async function generateText(
+  system: string,
+  messages: ChatMessage[],
+  opts?: { attachments?: Attachment[] },
+): Promise<string> {
   const provider = (process.env.AI_PROVIDER || "anthropic").toLowerCase();
   const { keyName, key } = envKey(provider);
   if (!key) {
@@ -33,8 +51,33 @@ export async function generateText(system: string, messages: ChatMessage[]): Pro
     );
   }
   const model = process.env.AI_MODEL;
+  const atts = opts?.attachments ?? [];
 
   if (provider === "anthropic") {
+    const anthMsgs: Array<{ role: "user" | "assistant"; content: unknown }> = messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
+    if (atts.length > 0 && anthMsgs.length > 0) {
+      const last = anthMsgs[anthMsgs.length - 1];
+      const blocks: Array<Record<string, unknown>> = [{ type: "text", text: String(last.content) }];
+      for (const a of atts) {
+        const src = a.absoluteUrl || a.url;
+        const img = await fetchImageBase64(src);
+        if (img) {
+          blocks.push({
+            type: "image",
+            source: { type: "base64", media_type: img.mime, data: img.b64 },
+          });
+        }
+      }
+      blocks.push({
+        type: "text",
+        text: "You may embed the provided image URLs directly in <img src> in the generated site: " +
+          atts.map((a) => a.absoluteUrl || a.url).join(" , "),
+      });
+      last.content = blocks;
+    }
     const resp = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -46,7 +89,7 @@ export async function generateText(system: string, messages: ChatMessage[]): Pro
         model: model || "claude-sonnet-4-5",
         max_tokens: 16000,
         system,
-        messages,
+        messages: anthMsgs,
       }),
     });
     if (!resp.ok) throw new Error(await readError(resp));
@@ -55,6 +98,13 @@ export async function generateText(system: string, messages: ChatMessage[]): Pro
       .filter((b: { type: string }) => b.type === "text")
       .map((b: { text: string }) => b.text)
       .join("");
+  }
+
+  const augmented = messages.slice();
+  if (atts.length > 0 && augmented.length > 0) {
+    const last = augmented[augmented.length - 1];
+    const lines = atts.map((a) => `REFERENCE IMAGE (may be embedded in the site): ${a.absoluteUrl || a.url}`).join("\n");
+    augmented[augmented.length - 1] = { ...last, content: last.content + "\n\n" + lines };
   }
 
   if (provider === "openai" || provider === "openrouter") {
@@ -72,7 +122,7 @@ export async function generateText(system: string, messages: ChatMessage[]): Pro
       body: JSON.stringify({
         model: model || defaultModel,
         max_tokens: 16000,
-        messages: [{ role: "system", content: system }, ...messages],
+        messages: [{ role: "system", content: system }, ...augmented],
       }),
     });
     if (!resp.ok) throw new Error(await readError(resp));
@@ -88,7 +138,7 @@ export async function generateText(system: string, messages: ChatMessage[]): Pro
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         system_instruction: { parts: [{ text: system }] },
-        contents: messages.map((m) => ({
+        contents: augmented.map((m) => ({
           role: m.role === "assistant" ? "model" : "user",
           parts: [{ text: m.content }],
         })),

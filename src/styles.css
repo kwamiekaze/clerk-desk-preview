@@ -55,25 +55,26 @@
 :root {
   --radius: 0.5rem;
 
-  /* Brand */
-  --background: oklch(0.13 0.012 260);            /* #07090D */
-  --surface: oklch(0.17 0.014 260);               /* #0D1016 */
-  --surface-2: oklch(0.21 0.015 260);
-  --foreground: oklch(0.95 0.012 90);             /* #F3F1E8 */
-  --muted: oklch(0.22 0.013 260);
-  --muted-foreground: oklch(0.66 0.012 260);
+  /* Matrix brand — near-black green-tinted with phosphor-CRT accents */
+  --background: oklch(0.10 0.02 155);              /* ≈ #030805 */
+  --surface: oklch(0.14 0.025 155);
+  --surface-2: oklch(0.18 0.03 155);
+  --foreground: oklch(0.94 0.10 145);              /* phosphor mint text */
+  --muted: oklch(0.20 0.03 155);
+  --muted-foreground: oklch(0.68 0.08 145);
 
-  --card: oklch(0.17 0.014 260);
+  --card: oklch(0.14 0.025 155);
   --card-foreground: var(--foreground);
-  --popover: oklch(0.17 0.014 260);
+  --popover: oklch(0.14 0.025 155);
   --popover-foreground: var(--foreground);
 
-  --primary: oklch(0.92 0.21 130);                /* #B8FF5A electric green */
-  --primary-foreground: oklch(0.13 0.012 260);
-  --secondary: oklch(0.62 0.22 285);              /* #7867FF ultraviolet */
+  --primary: oklch(0.83 0.28 145);                 /* Matrix green ≈ #00FF41 */
+  --primary-foreground: oklch(0.10 0.02 155);
+  --primary-dim: oklch(0.58 0.20 145);             /* ≈ #0aa832 */
+  --secondary: oklch(0.62 0.22 285);
   --secondary-foreground: oklch(0.98 0 0);
-  --accent: var(--secondary);
-  --accent-foreground: var(--secondary-foreground);
+  --accent: var(--primary);
+  --accent-foreground: var(--primary-foreground);
 
   --destructive: oklch(0.65 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
@@ -81,11 +82,11 @@
   --border: oklch(1 0 0 / 8%);
   --border-strong: oklch(1 0 0 / 16%);
   --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.92 0.21 130);
-  --grid: oklch(1 0 0 / 4%);
+  --ring: var(--primary);
+  --grid: oklch(0.83 0.28 145 / 8%);
 
-  --status-ok: oklch(0.92 0.21 130);
-  --status-run: oklch(0.62 0.22 285);
+  --status-ok: var(--primary);
+  --status-run: var(--primary);
   --status-warn: oklch(0.82 0.17 80);
   --status-idle: oklch(0.55 0.01 260);
 }
@@ -197,6 +198,43 @@
 @utility animate-cc-scan { animation: cc-scan 6s linear infinite; }
 @utility animate-cc-pulse-dot { animation: cc-pulse-dot 1.8s ease-in-out infinite; }
 @utility animate-cc-marquee { animation: cc-marquee 40s linear infinite; }
+
+/* Matrix / phosphor CRT effects */
+@utility scanlines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    color-mix(in oklab, var(--primary) 8%, transparent) 0px,
+    color-mix(in oklab, var(--primary) 8%, transparent) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+@utility text-glow {
+  text-shadow: 0 0 12px color-mix(in oklab, var(--primary) 60%, transparent);
+}
+@utility btn-magnetic {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+  box-shadow: 0 0 0 rgba(0,0,0,0);
+}
+@utility btn-magnetic-hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px -8px color-mix(in oklab, var(--primary) 55%, transparent);
+}
+@keyframes cc-glitch {
+  0%, 100% { transform: translate(0,0); }
+  20% { transform: translate(-1px, 1px); }
+  40% { transform: translate(1px, -1px); }
+  60% { transform: translate(-1px, 0); }
+  80% { transform: translate(1px, 1px); }
+}
+@utility hover-glitch { transition: color .15s; }
+@utility fade-up {
+  animation: cc-fade-up .5s ease-out both;
+}
+@keyframes cc-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

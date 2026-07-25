@@ -16,21 +16,27 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
+          display_name: string | null
           email: string | null
           id: string
           plan: string
           role: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
           email?: string | null
           id: string
           plan?: string
           role?: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
           email?: string | null
           id?: string
           plan?: string
@@ -105,6 +111,7 @@ export type Database = {
       projects: {
         Row: {
           created_at: string
+          github_repo: string | null
           id: string
           kind: string
           status: string
@@ -114,6 +121,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          github_repo?: string | null
           id?: string
           kind?: string
           status?: string
@@ -123,6 +131,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          github_repo?: string | null
           id?: string
           kind?: string
           status?: string
@@ -131,6 +140,70 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      published_files: {
+        Row: {
+          content: string
+          id: string
+          path: string
+          site_id: string
+        }
+        Insert: {
+          content?: string
+          id?: string
+          path: string
+          site_id: string
+        }
+        Update: {
+          content?: string
+          id?: string
+          path?: string
+          site_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "published_files_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "published_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      published_sites: {
+        Row: {
+          id: string
+          project_id: string
+          published_at: string
+          slug: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          published_at?: string
+          slug: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          published_at?: string
+          slug?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "published_sites_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       usage_events: {
         Row: {
@@ -163,6 +236,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_secrets: {
+        Row: {
+          github_token: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          github_token?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          github_token?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {

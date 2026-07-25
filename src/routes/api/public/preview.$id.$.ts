@@ -2,12 +2,24 @@ import { createFileRoute } from "@tanstack/react-router";
 
 // Public preview endpoint. Serves project_files by project uuid.
 // UUID acts as an unguessable capability token, similar to how Vercel preview URLs work.
+// Adding ?bridge=1 injects a small error-forwarding script into HTML responses
+// so the workspace iframe can surface runtime errors. Never used on published sites.
+const BRIDGE_SCRIPT = `
+<script>
+(function(){
+  function send(type, message){
+    try { parent.postMessage({source:'codingclerks', type: type, message: String(message).slice(0, 500)}, '*'); } catch(e){}
+  }
+  window.addEventListener('error', function(e){ send('error', (e.error && e.error.message) || e.message || 'error'); }, true);
+  window.addEventListener('unhandledrejection', function(e){ send('error', (e.reason && (e.reason.message || e.reason.toString())) || 'unhandled promise'); });
+})();
+</script>`;
+
 export const Route = createFileRoute("/api/public/preview/$id/$")({
   server: {
     handlers: {
-      GET: async ({ params }) => {
+      GET: async ({ params, request }) => {
         const id = params.id;
-        // uuid v4 shape check to avoid arbitrary lookups
         if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
           return new Response("Not found", { status: 404 });
         }
@@ -23,7 +35,8 @@ export const Route = createFileRoute("/api/public/preview/$id/$")({
           .maybeSingle();
         if (error || !data) return new Response("Not found", { status: 404 });
 
-        const type = path.endsWith(".html") || !path.includes(".")
+        const isHtml = path.endsWith(".html") || !path.includes(".");
+        const type = isHtml
           ? "text/html; charset=utf-8"
           : path.endsWith(".css")
             ? "text/css; charset=utf-8"
@@ -33,7 +46,15 @@ export const Route = createFileRoute("/api/public/preview/$id/$")({
                 ? "application/json; charset=utf-8"
                 : "text/plain; charset=utf-8";
 
-        return new Response(data.content, {
+        const url = new URL(request.url);
+        const wantBridge = url.searchParams.get("bridge") === "1";
+        let body = data.content;
+        if (isHtml && wantBridge) {
+          if (/<\/body>/i.test(body)) body = body.replace(/<\/body>/i, BRIDGE_SCRIPT + "</body>");
+          else body = body + BRIDGE_SCRIPT;
+        }
+
+        return new Response(body, {
           status: 200,
           headers: {
             "content-type": type,
@@ -45,3 +66,4 @@ export const Route = createFileRoute("/api/public/preview/$id/$")({
     },
   },
 });
+
