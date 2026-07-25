@@ -3,6 +3,7 @@ import { useNavigate, createFileRoute, Link } from "@tanstack/react-router";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ArrowRight, Mail, Lock } from "lucide-react";
+import { MatrixRain } from "@/components/fx/MatrixRain";
 
 type Mode = "signin" | "signup";
 
@@ -51,14 +52,15 @@ function AuthPage() {
   return (
     <div className="relative grid min-h-screen lg:grid-cols-2">
       <aside className="relative hidden overflow-hidden border-r border-border lg:flex lg:flex-col lg:justify-between lg:p-10">
+        <MatrixRain className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.18]" density={1} />
         <div className="pointer-events-none absolute inset-0 bg-grid opacity-50" aria-hidden />
         <div className="pointer-events-none absolute -left-32 top-16 h-96 w-96 bloom-primary opacity-60" aria-hidden />
         <div className="relative">
           <Link to="/"><Wordmark /></Link>
         </div>
         <div className="relative max-w-md">
-          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">Bureau · Desk 01</div>
-          <p className="mt-3 text-balance text-3xl font-semibold leading-tight tracking-tight">
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary text-glow">Bureau · Desk 01</div>
+          <p className="mt-3 text-balance text-3xl font-semibold leading-tight tracking-tight text-glow">
             Sign in to dispatch your clerks. The ledger never sleeps.
           </p>
         </div>
@@ -82,7 +84,7 @@ function AuthPage() {
             <button
               type="submit"
               disabled={busy}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2.5 text-sm font-medium text-primary-foreground text-glow btn-magnetic hover:btn-magnetic-hover transition-colors disabled:opacity-60"
             >
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{isSignup ? "Create account" : "Sign in"} <ArrowRight className="h-4 w-4" /></>}
             </button>
