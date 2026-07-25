@@ -266,7 +266,9 @@ export const cloneProject = createServerFn({ method: "POST" })
     }).parse,
   )
   .handler(async ({ data, context }) => {
-    await enforceFreePlanLimits(context.supabase, context.userId, "clone");
+    const resolved = await resolveActiveProvider(context.supabase, context.userId);
+    if (!resolved) throw new Error("NO_KEY_CONFIGURED: Add an API key in Settings → API Keys to start building.");
+    if (resolved.isPlatformFallback) await enforceFreePlanLimits(context.supabase, context.userId, "clone");
     const scraped = await fetchSiteContent(data.url);
     const atts = toAttachments(data.attachments, requestOrigin());
 
@@ -279,7 +281,7 @@ export const cloneProject = createServerFn({ method: "POST" })
             `Source URL: ${scraped.url}\nPage title: ${scraped.title}\n\nExtracted text content:\n${scraped.text}\n\n${data.notes ? "Additional notes from the user: " + data.notes + "\n\n" : ""}Recreate this site as an original modern static app.`,
         },
       ],
-      { attachments: atts },
+      { supabase: context.supabase, userId: context.userId, attachments: atts },
     );
     const parsed = parseModelJson(raw);
 
