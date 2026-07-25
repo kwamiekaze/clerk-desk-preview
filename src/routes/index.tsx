@@ -118,6 +118,7 @@ function LandingPage() {
         <FinalCTA />
       </main>
       <Footer />
+      </div>
     </div>
   );
 }
