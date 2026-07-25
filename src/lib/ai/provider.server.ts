@@ -1,10 +1,29 @@
 // Server-only AI provider layer. Raw fetch, no SDKs.
-// Selects provider from AI_PROVIDER env; each provider reads its own key.
+// BYOK-first: reads the caller's stored provider key; falls back to platform env only when configured.
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
 export type Attachment = { url: string; absoluteUrl?: string; mime?: string };
+export type ProviderId = "anthropic" | "openai" | "openrouter" | "gemini" | "kimi";
 
-function envKey(provider: string): { keyName: string; key: string | undefined } {
+export const PROVIDERS: ProviderId[] = ["openrouter", "openai", "anthropic", "gemini", "kimi"];
+
+export const PROVIDER_DEFAULT_MODEL: Record<ProviderId, string> = {
+  anthropic: "claude-sonnet-4-5",
+  openai: "gpt-4o",
+  openrouter: "openrouter/auto",
+  gemini: "gemini-2.0-flash",
+  kimi: "kimi-k3",
+};
+
+export const PROVIDER_LABEL: Record<ProviderId, string> = {
+  openrouter: "OpenRouter",
+  openai: "OpenAI",
+  anthropic: "Anthropic",
+  gemini: "Google Gemini",
+  kimi: "Kimi (Moonshot AI)",
+};
+
+function envKey(provider: ProviderId): { keyName: string; key: string | undefined } {
   switch (provider) {
     case "anthropic":
       return { keyName: "ANTHROPIC_API_KEY", key: process.env.ANTHROPIC_API_KEY };
@@ -14,9 +33,15 @@ function envKey(provider: string): { keyName: string; key: string | undefined } 
       return { keyName: "OPENROUTER_API_KEY", key: process.env.OPENROUTER_API_KEY };
     case "gemini":
       return { keyName: "GEMINI_API_KEY", key: process.env.GEMINI_API_KEY };
-    default:
-      return { keyName: "ANTHROPIC_API_KEY", key: undefined };
+    case "kimi":
+      return { keyName: "KIMI_API_KEY", key: process.env.KIMI_API_KEY };
   }
+}
+
+export function platformFallbackAvailable(): boolean {
+  const p = (process.env.AI_PROVIDER || "").toLowerCase() as ProviderId;
+  if (!PROVIDERS.includes(p)) return false;
+  return Boolean(envKey(p).key);
 }
 
 async function readError(resp: Response): Promise<string> {
@@ -38,20 +63,19 @@ async function fetchImageBase64(url: string): Promise<{ b64: string; mime: strin
   } catch { return null; }
 }
 
-export async function generateText(
+export async function callProvider(
+  provider: ProviderId,
+  apiKey: string,
+  model: string,
   system: string,
   messages: ChatMessage[],
-  opts?: { attachments?: Attachment[] },
+  opts?: { attachments?: Attachment[]; maxTokens?: number },
 ): Promise<string> {
-  const provider = (process.env.AI_PROVIDER || "anthropic").toLowerCase();
-  const { keyName, key } = envKey(provider);
-  if (!key) {
-    throw new Error(
-      `AI provider "${provider}" selected but ${keyName} is not set. Add it in Project Settings → Secrets.`,
-    );
-  }
-  const model = process.env.AI_MODEL;
   const atts = opts?.attachments ?? [];
+  // Raise ceilings for providers that comfortably handle it; keep others at 16k.
+  const defaultMax =
+    provider === "anthropic" || provider === "openrouter" || provider === "kimi" ? 24000 : 16000;
+  const maxTokens = opts?.maxTokens ?? defaultMax;
 
   if (provider === "anthropic") {
     const anthMsgs: Array<{ role: "user" | "assistant"; content: unknown }> = messages.map((m) => ({
@@ -82,12 +106,12 @@ export async function generateText(
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": key,
+        "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: model || "claude-sonnet-4-5",
-        max_tokens: 16000,
+        model: model || PROVIDER_DEFAULT_MODEL.anthropic,
+        max_tokens: maxTokens,
         system,
         messages: anthMsgs,
       }),
@@ -107,21 +131,22 @@ export async function generateText(
     augmented[augmented.length - 1] = { ...last, content: last.content + "\n\n" + lines };
   }
 
-  if (provider === "openai" || provider === "openrouter") {
+  if (provider === "openai" || provider === "openrouter" || provider === "kimi") {
     const url =
       provider === "openai"
         ? "https://api.openai.com/v1/chat/completions"
-        : "https://openrouter.ai/api/v1/chat/completions";
-    const defaultModel = provider === "openai" ? "gpt-4o" : "openrouter/auto";
+        : provider === "openrouter"
+          ? "https://openrouter.ai/api/v1/chat/completions"
+          : "https://api.moonshot.ai/v1/chat/completions";
     const resp = await fetch(url, {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        Authorization: `Bearer ${key}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: model || defaultModel,
-        max_tokens: 16000,
+        model: model || PROVIDER_DEFAULT_MODEL[provider],
+        max_tokens: maxTokens,
         messages: [{ role: "system", content: system }, ...augmented],
       }),
     });
@@ -131,18 +156,18 @@ export async function generateText(
   }
 
   if (provider === "gemini") {
-    const m = model || "gemini-2.0-flash";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(key)}`;
+    const m = model || PROVIDER_DEFAULT_MODEL.gemini;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(apiKey)}`;
     const resp = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         system_instruction: { parts: [{ text: system }] },
-        contents: augmented.map((m) => ({
-          role: m.role === "assistant" ? "model" : "user",
-          parts: [{ text: m.content }],
+        contents: augmented.map((mm) => ({
+          role: mm.role === "assistant" ? "model" : "user",
+          parts: [{ text: mm.content }],
         })),
-        generationConfig: { maxOutputTokens: 16000 },
+        generationConfig: { maxOutputTokens: maxTokens },
       }),
     });
     if (!resp.ok) throw new Error(await readError(resp));
@@ -152,7 +177,107 @@ export async function generateText(
       .join("");
   }
 
-  throw new Error(`Unknown AI_PROVIDER "${provider}"`);
+  throw new Error(`Unknown provider "${provider}"`);
+}
+
+export type ResolvedProvider = {
+  provider: ProviderId;
+  apiKey: string;
+  model: string;
+  isPlatformFallback: boolean;
+};
+
+export async function resolveActiveProvider(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  userId: string,
+): Promise<ResolvedProvider | null> {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("default_ai_provider")
+    .eq("id", userId)
+    .maybeSingle();
+  const preferred = (profile?.default_ai_provider ?? null) as ProviderId | null;
+
+  if (preferred && PROVIDERS.includes(preferred)) {
+    const { data: row } = await supabase
+      .from("user_provider_keys")
+      .select("api_key,model")
+      .eq("user_id", userId)
+      .eq("provider", preferred)
+      .maybeSingle();
+    if (row?.api_key) {
+      return {
+        provider: preferred,
+        apiKey: row.api_key,
+        model: (row.model && row.model.trim()) || PROVIDER_DEFAULT_MODEL[preferred],
+        isPlatformFallback: false,
+      };
+    }
+  }
+
+  // Try any connected key as a secondary personal fallback (e.g. default was unset).
+  if (!preferred) {
+    const { data: any } = await supabase
+      .from("user_provider_keys")
+      .select("provider,api_key,model")
+      .eq("user_id", userId)
+      .limit(1)
+      .maybeSingle();
+    if (any?.api_key && PROVIDERS.includes(any.provider as ProviderId)) {
+      const p = any.provider as ProviderId;
+      return {
+        provider: p,
+        apiKey: any.api_key,
+        model: (any.model && any.model.trim()) || PROVIDER_DEFAULT_MODEL[p],
+        isPlatformFallback: false,
+      };
+    }
+  }
+
+  // Platform fallback
+  const envProv = (process.env.AI_PROVIDER || "").toLowerCase() as ProviderId;
+  if (PROVIDERS.includes(envProv)) {
+    const { key } = envKey(envProv);
+    if (key) {
+      return {
+        provider: envProv,
+        apiKey: key,
+        model: process.env.AI_MODEL || PROVIDER_DEFAULT_MODEL[envProv],
+        isPlatformFallback: true,
+      };
+    }
+  }
+  return null;
+}
+
+export async function generateText(
+  system: string,
+  messages: ChatMessage[],
+  userIdOrOpts:
+    | string
+    | { supabase: import("@supabase/supabase-js").SupabaseClient; userId: string; attachments?: Attachment[] },
+  legacyOpts?: { attachments?: Attachment[] },
+): Promise<string> {
+  // Support both call shapes so existing helpers keep compiling; projects.functions.ts uses the object form.
+  let supabase: import("@supabase/supabase-js").SupabaseClient | null = null;
+  let userId: string | null = null;
+  let attachments: Attachment[] | undefined;
+  if (typeof userIdOrOpts === "string") {
+    userId = userIdOrOpts;
+    attachments = legacyOpts?.attachments;
+  } else {
+    supabase = userIdOrOpts.supabase;
+    userId = userIdOrOpts.userId;
+    attachments = userIdOrOpts.attachments;
+  }
+  if (!supabase || !userId) {
+    throw new Error("generateText requires { supabase, userId }.");
+  }
+  const resolved = await resolveActiveProvider(supabase, userId);
+  if (!resolved) {
+    throw new Error("NO_KEY_CONFIGURED: Add an API key in Settings → API Keys to start building.");
+  }
+  return callProvider(resolved.provider, resolved.apiKey, resolved.model, system, messages, { attachments });
 }
 
 // ---- Tolerant JSON parser + file sanitization ----
@@ -162,7 +287,6 @@ export type ParsedResult = { title: string; summary: string; files: ParsedFile[]
 
 export function parseModelJson(raw: string): ParsedResult {
   let text = raw.trim();
-  // strip triple-backtick fences
   text = text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "");
   const first = text.indexOf("{");
   const last = text.lastIndexOf("}");
@@ -207,21 +331,30 @@ Respond with ONLY a JSON object, no markdown fences, no commentary:
 TECHNICAL RULES for every file:
 - Build a self-contained static web app. "index.html" is required and is the entry page.
 - Style with Tailwind via CDN: include <script src="https://cdn.tailwindcss.com"></script> in each page's <head>.
+- Motion libraries are ENCOURAGED and load from CDN — no build step:
+  - GSAP + ScrollTrigger: <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    and <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script> for scroll-driven storytelling, pinned sections, parallax, and staggered timeline reveals.
+  - Lenis (https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js) is fine for smooth scrolling.
 - Interactivity: prefer vanilla JS in a <script> tag. If the app truly needs React, load React 18 UMD + Babel Standalone from a CDN and write JSX inside <script type="text/babel">.
 - No build steps, no npm imports, no local asset files. Images: inline SVG or https://placehold.co URLs.
 - Multiple pages are allowed (e.g. "about.html") with relative links between them. Keep it to at most 4 files.
 - Every page must be responsive, polished, and complete — real copy, no lorem ipsum, no TODO comments, no broken references.
-- Keep total output under roughly 1200 lines so nothing is cut off. One excellent page beats four thin ones.
+- Keep total output under roughly 1800 lines so nothing is cut off. One excellent page beats four thin ones.
+
+MOTION QUALITY BAR — this platform's signature is award-show-caliber motion (motionsites.ai / Awwwards tier). Unless the user explicitly asks for something plain or minimal, EVERY generated site should include:
+- A deliberate entrance animation on load (staggered hero reveal, mask/curtain wipe, or letter-by-letter type-in).
+- Scroll-triggered reveals throughout the page — IntersectionObserver for lighter builds, GSAP ScrollTrigger for anything cinematic (pinned sections, parallax layers, horizontal scroll galleries, timeline reveals).
+- Interaction polish: magnetic buttons, hover/cursor-aware transforms, subtle inertia, custom cursor accents, or animated underlines. Ship the site as a piece of interactive design, not a static page.
 `;
 
 export const SYSTEM_GENERATE =
-  "You are the build engine for CodingClerks, an AI app builder. A user will describe a website or app. Design and produce it at the quality bar of a senior product designer and front-end engineer: intentional palette, strong typography, real content inferred from the request, responsive layout." +
+  "You are the build engine for CodingClerks, an AI app builder. A user will describe a website or app. Design and produce it at the quality bar of a senior product designer and front-end engineer: intentional palette, strong typography, real content inferred from the request, responsive layout, and signature motion." +
   OUTPUT_CONTRACT;
 
 export const SYSTEM_EDIT =
-  "You are the build engine for CodingClerks. You will receive the COMPLETE current files of a user's project as JSON, followed by an edit instruction. Apply the instruction to the existing design — do not restart from scratch, preserve everything the user did not ask to change. Return the COMPLETE updated project: include EVERY file with FULL content, even files you did not modify. Files you omit will be deleted." +
+  "You are the build engine for CodingClerks. You will receive the COMPLETE current files of a user's project as JSON, followed by an edit instruction. Apply the instruction to the existing design — do not restart from scratch, preserve everything the user did not ask to change, including existing motion and animation code. Return the COMPLETE updated project: include EVERY file with FULL content, even files you did not modify. Files you omit will be deleted." +
   OUTPUT_CONTRACT;
 
 export const SYSTEM_CLONE =
-  "You are the build engine for CodingClerks. You will receive scraped content and metadata from a real website. Recreate it as a modern, original static web app: preserve the information architecture, page structure, headings, and text content, but implement a fresh, cleaner visual design. Do not attempt to copy proprietary logos or images — use inline SVG placeholders or https://placehold.co with descriptive labels instead." +
+  "You are the build engine for CodingClerks. You will receive scraped content and metadata from a real website. Recreate it as a modern, original static web app: preserve the information architecture, page structure, headings, and text content, but implement a fresh, cleaner visual design with signature motion. Do not attempt to copy proprietary logos or images — use inline SVG placeholders or https://placehold.co with descriptive labels instead." +
   OUTPUT_CONTRACT;
