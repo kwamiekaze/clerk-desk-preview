@@ -1,223 +1,268 @@
-import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronRight, MessageSquare, FileCode2, Eye, ChevronLeft } from "lucide-react";
-import { AppShell } from "@/components/app/AppShell";
-import { InitProgress } from "@/components/app/InitProgress";
-import { ProjectToolbar } from "@/components/builder/ProjectToolbar";
-import { ClerkChat } from "@/components/builder/ClerkChat";
-import { FileTree } from "@/components/builder/FileTree";
-import { CodeView } from "@/components/builder/CodeView";
-import { LivePreview } from "@/components/builder/LivePreview";
-import { GithubDialog, VercelDialog, ShareDialog, VersionHistoryDialog } from "@/components/builder/Dialogs";
-import { builderApi, type BranchInfo, type BuildError, type BuildState, type ChatMessage, type FileNode, type Version } from "@/lib/mock/builder";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { getProject, editProject, deleteProject, renameProject } from "@/lib/ai/projects.functions";
+import { ArrowLeft, Send, Loader2, Trash2, RefreshCw, FileCode2, ExternalLink, Pencil, Check, X } from "lucide-react";
 
 export const Route = createFileRoute("/app/projects/$id")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    init: s.init === 1 || s.init === "1" ? 1 : 0,
-  }),
-  head: () => ({ meta: [{ title: "Builder — CodingClerks" }] }),
-  component: ProjectDetail,
+  head: () => ({ meta: [{ title: "Project — CodingClerks" }] }),
+  component: ProjectWorkspace,
 });
 
-type Pane = "chat" | "code" | "preview";
+type FileRow = { id: string; path: string; content: string };
+type MessageRow = { id: string; role: "user" | "assistant" | "system"; content: string; created_at: string };
+type Project = { id: string; title: string; status: string; kind: string };
 
-function ProjectDetail() {
+function ProjectWorkspace() {
   const { id } = Route.useParams();
-  const { init } = Route.useSearch();
+  const navigate = useNavigate();
+  const fetchProject = useServerFn(getProject);
+  const edit = useServerFn(editProject);
+  const del = useServerFn(deleteProject);
+  const rename = useServerFn(renameProject);
 
-  if (init) {
+  const [project, setProject] = useState<Project | null>(null);
+  const [files, setFiles] = useState<FileRow[]>([]);
+  const [messages, setMessages] = useState<MessageRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+  const [rightTab, setRightTab] = useState<"preview" | "code">("preview");
+  const [renaming, setRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [previewKey, setPreviewKey] = useState(0);
+
+  async function refresh() {
+    try {
+      const r = await fetchProject({ data: { id } });
+      setProject(r.project as Project);
+      setFiles(r.files as FileRow[]);
+      setMessages(r.messages as MessageRow[]);
+      if (!selectedPath && r.files.length > 0) {
+        setSelectedPath((r.files.find((f: FileRow) => f.path === "index.html") ?? r.files[0]).path);
+      }
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+  useEffect(() => { refresh(); /* eslint-disable-next-line */ }, [id]);
+
+  async function onSend(e: FormEvent) {
+    e.preventDefault();
+    const instruction = input.trim();
+    if (!instruction) return;
+    setBusy(true);
+    setErr(null);
+    // optimistic
+    setMessages((m) => [
+      ...m,
+      { id: "tmp-u-" + Date.now(), role: "user", content: instruction, created_at: new Date().toISOString() },
+    ]);
+    setInput("");
+    try {
+      await edit({ data: { id, instruction } });
+      await refresh();
+      setPreviewKey((k) => k + 1);
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onDelete() {
+    if (!confirm("Delete this project?")) return;
+    await del({ data: { id } });
+    navigate({ to: "/app" });
+  }
+
+  async function saveRename() {
+    const t = renameValue.trim();
+    if (!t) { setRenaming(false); return; }
+    await rename({ data: { id, title: t } });
+    setProject((p) => (p ? { ...p, title: t } : p));
+    setRenaming(false);
+  }
+
+  if (loading) {
+    return <div className="flex h-[calc(100vh-3.5rem)] items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-mute" /></div>;
+  }
+  if (!project) {
     return (
-      <AppShell
-        eyebrow="Project"
-        title="Initializing project"
-        actions={
-          <nav className="flex items-center gap-1 font-mono text-[11px] text-mute">
-            <Link to="/app/projects" className="hover:text-foreground">Projects</Link>
-            <ChevronRight className="h-3 w-3" />
-            <span className="text-foreground">{id}</span>
-          </nav>
-        }
-      >
-        <InitProgress projectId={id} />
-      </AppShell>
+      <div className="mx-auto max-w-2xl p-10 text-center">
+        <p className="text-sm text-destructive">{err ?? "Project not found."}</p>
+        <Link to="/app" className="mt-4 inline-flex items-center gap-1 font-mono text-xs text-primary hover:underline">
+          <ArrowLeft className="h-3 w-3" /> back to dashboard
+        </Link>
+      </div>
     );
   }
-  return <Builder id={id} />;
-}
 
-const SEED_MESSAGES: ChatMessage[] = [
-  {
-    id: "seed1",
-    role: "clerk",
-    text: "Scaffolded a Vite + React + Tailwind project from your brief. The hero, feature grid, and CTA are wired in App.tsx.",
-    at: new Date(Date.now() - 1000 * 60 * 22).toISOString(),
-    receipt: { pointsSpent: 9, tokens: 41200, ms: 12800 },
-  },
-];
-
-function Builder({ id }: { id: string }) {
-  const [branch, setBranch] = useState<BranchInfo>({ name: "main", ahead: 2, behind: 0, dirty: true });
-  const [state, setState] = useState<BuildState>("ready");
-  const [files, setFiles] = useState<FileNode[]>([]);
-  const [selected, setSelected] = useState<string | null>("src/components/Hero.tsx");
-  const [pinned, setPinned] = useState<string[]>(["src/components/Hero.tsx"]);
-  const [errors, setErrors] = useState<BuildError[]>([]);
-  const [versions, setVersions] = useState<Version[]>([]);
-  const [pane, setPane] = useState<Pane>("chat");
-
-  const [openGh, setOpenGh] = useState(false);
-  const [openVc, setOpenVc] = useState(false);
-  const [openShare, setOpenShare] = useState(false);
-  const [openHistory, setOpenHistory] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    builderApi.getProject(id).then((p) => { if (!cancelled) setBranch(p.branch); });
-    builderApi.listFiles(id).then((f) => { if (!cancelled) setFiles(f); });
-    builderApi.listVersions(id).then((v) => { if (!cancelled) setVersions(v); });
-    builderApi.listErrors(id).then((e) => { if (!cancelled) setErrors(e); });
-    return () => { cancelled = true; };
-  }, [id]);
-
-  // Keyboard shortcuts: g c / g f / g p — switch panes; ⌘/ — focus chat
-  useEffect(() => {
-    let pendingG = false;
-    const h = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      const inField = tag === "INPUT" || tag === "TEXTAREA";
-      if ((e.metaKey || e.ctrlKey) && e.key === "/") { e.preventDefault(); setPane("chat"); return; }
-      if (inField) return;
-      if (e.key === "g") { pendingG = true; setTimeout(() => (pendingG = false), 700); return; }
-      if (pendingG) {
-        if (e.key === "c") setPane("chat");
-        if (e.key === "f") setPane("code");
-        if (e.key === "p") setPane("preview");
-        pendingG = false;
-      }
-    };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
-  }, []);
-
-  function togglePin(path: string) {
-    setPinned((p) => (p.includes(path) ? p.filter((x) => x !== path) : [...p, path]));
-  }
-
-  function triggerRepair() {
-    // Real impl: call streamChat with a system-authored "Repair build errors" prompt.
-    setErrors([]);
-    setState("thinking");
-    setTimeout(() => setState("ready"), 1400);
-  }
-
-  const changed = files.filter((f) => f.changed);
+  const selectedFile = files.find((f) => f.path === selectedPath) ?? null;
+  const previewUrl = `/api/public/preview/${id}/index.html`;
 
   return (
-    <div className="flex h-screen flex-col bg-background text-foreground">
-      <header className="flex h-12 items-center justify-between border-b border-border bg-background/80 px-3 backdrop-blur">
-        <Link to="/app/projects" className="inline-flex items-center gap-1 font-mono text-[11px] text-mute hover:text-foreground">
-          <ChevronLeft className="h-3 w-3" /> projects
-        </Link>
-        <div className="font-mono text-[11px] text-mute">⌘/ chat · g c · g f · g p</div>
-      </header>
-
-      <ProjectToolbar
-        name={id}
-        branch={branch}
-        state={state}
-        onShare={() => setOpenShare(true)}
-        onGithub={() => setOpenGh(true)}
-        onDeploy={() => setOpenVc(true)}
-        onHistory={() => setOpenHistory(true)}
-      />
-
-      {/* Desktop / tablet: three-panel grid */}
-      <div className="hidden flex-1 min-h-0 lg:grid lg:grid-cols-[360px_minmax(0,1fr)_minmax(0,1fr)]">
-        <aside className="min-h-0 border-r border-border bg-surface/30">
-          <ClerkChat
-            initialMessages={SEED_MESSAGES}
-            onState={setState}
-            pinnedScope={pinned}
-            onJumpToFile={(p) => setSelected(p)}
-          />
-        </aside>
-        <section className="grid min-h-0 grid-rows-[1fr_auto] border-r border-border">
-          <div className="grid min-h-0 grid-cols-[220px_minmax(0,1fr)]">
-            <div className="min-h-0 border-r border-border bg-surface/20">
-              <FileTree files={files} selected={selected} onSelect={setSelected} pinned={pinned} onTogglePin={togglePin} />
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between border-b border-border bg-surface/40 px-4 py-2">
+        <div className="flex min-w-0 items-center gap-3">
+          <Link to="/app" className="inline-flex items-center gap-1 font-mono text-[11px] text-mute hover:text-foreground">
+            <ArrowLeft className="h-3 w-3" /> projects
+          </Link>
+          <span className="text-border">/</span>
+          {renaming ? (
+            <div className="flex items-center gap-1">
+              <input
+                autoFocus
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") saveRename(); if (e.key === "Escape") setRenaming(false); }}
+                className="rounded border border-border bg-background px-2 py-0.5 text-sm outline-none focus:border-primary/60"
+              />
+              <button onClick={saveRename} className="rounded p-1 text-mute hover:text-foreground"><Check className="h-3.5 w-3.5" /></button>
+              <button onClick={() => setRenaming(false)} className="rounded p-1 text-mute hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
             </div>
-            <div className="min-h-0">
-              <CodeView projectId={id} path={selected} />
-            </div>
-          </div>
-          <ChangedFooter changed={changed} />
-        </section>
-        <section className="min-h-0">
-          <LivePreview url="https://sandbox.codingclerks.dev" errors={errors} onRepair={triggerRepair} />
-        </section>
-      </div>
-
-      {/* Mobile/tablet stack with tab switcher */}
-      <div className="flex flex-1 min-h-0 flex-col lg:hidden">
-        <div className="grid grid-cols-3 border-b border-border bg-surface/40 font-mono text-[10px]">
-          <TabPill active={pane === "chat"} onClick={() => setPane("chat")} icon={MessageSquare} label="Chat" />
-          <TabPill active={pane === "code"} onClick={() => setPane("code")} icon={FileCode2} label="Code" />
-          <TabPill active={pane === "preview"} onClick={() => setPane("preview")} icon={Eye} label="Preview" />
-        </div>
-        <div className="flex-1 min-h-0">
-          {pane === "chat" && <ClerkChat initialMessages={SEED_MESSAGES} onState={setState} pinnedScope={pinned} onJumpToFile={(p) => { setSelected(p); setPane("code"); }} />}
-          {pane === "code" && (
-            <div className="grid h-full grid-cols-[180px_minmax(0,1fr)]">
-              <div className="border-r border-border bg-surface/20"><FileTree files={files} selected={selected} onSelect={setSelected} pinned={pinned} onTogglePin={togglePin} /></div>
-              <CodeView projectId={id} path={selected} />
-            </div>
+          ) : (
+            <button
+              onClick={() => { setRenameValue(project.title); setRenaming(true); }}
+              className="inline-flex items-center gap-1.5 truncate text-sm font-medium hover:text-primary"
+            >
+              {project.title}
+              <Pencil className="h-3 w-3 text-mute" />
+            </button>
           )}
-          {pane === "preview" && <LivePreview url="https://sandbox.codingclerks.dev" errors={errors} onRepair={triggerRepair} />}
+          <span className="font-mono text-[10px] uppercase text-mute">{project.status}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <a
+            href={previewUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 font-mono text-[10px] text-mute hover:text-foreground"
+          >
+            <ExternalLink className="h-3 w-3" /> open
+          </a>
+          <button
+            onClick={onDelete}
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 font-mono text-[10px] text-mute hover:border-destructive/50 hover:text-destructive"
+          >
+            <Trash2 className="h-3 w-3" /> delete
+          </button>
         </div>
       </div>
 
-      <GithubDialog open={openGh} onClose={() => setOpenGh(false)} />
-      <VercelDialog open={openVc} onClose={() => setOpenVc(false)} />
-      <ShareDialog open={openShare} onClose={() => setOpenShare(false)} />
-      <VersionHistoryDialog open={openHistory} onClose={() => setOpenHistory(false)} versions={versions} />
+      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[380px_minmax(0,1fr)]">
+        {/* Chat pane */}
+        <aside className="flex min-h-0 flex-col border-r border-border bg-surface/30">
+          <div className="min-h-0 flex-1 overflow-y-auto p-4">
+            <ol className="space-y-3">
+              {messages.map((m) => (
+                <li key={m.id} className={m.role === "user" ? "" : "text-mute"}>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-mute">
+                    {m.role === "user" ? "you" : m.role === "assistant" ? "clerk" : "system"}
+                  </div>
+                  <div className="mt-1 whitespace-pre-wrap text-sm text-foreground">{m.content}</div>
+                </li>
+              ))}
+              {busy && (
+                <li className="flex items-center gap-2 font-mono text-[11px] text-mute">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Applying edit — this can take up to a minute.
+                </li>
+              )}
+            </ol>
+          </div>
+          {err && (
+            <div className="border-t border-destructive/40 bg-destructive/10 px-4 py-2 text-xs text-destructive">{err}</div>
+          )}
+          <form onSubmit={onSend} className="border-t border-border bg-background/60 p-3">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); onSend(e as unknown as FormEvent); } }}
+              placeholder="Ask the clerk to change something…"
+              rows={3}
+              disabled={busy}
+              className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary/60"
+            />
+            <div className="mt-2 flex items-center justify-between">
+              <span className="font-mono text-[10px] text-mute">⌘/Ctrl+↵ send</span>
+              <button
+                type="submit"
+                disabled={busy || !input.trim()}
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+              >
+                {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                Send
+              </button>
+            </div>
+          </form>
+        </aside>
+
+        {/* Right pane */}
+        <section className="flex min-h-0 flex-col">
+          <div className="flex items-center justify-between border-b border-border bg-surface/20 px-3 py-2">
+            <div className="inline-flex rounded-md border border-border bg-background p-0.5">
+              <RightTabBtn active={rightTab === "preview"} onClick={() => setRightTab("preview")} label="Preview" />
+              <RightTabBtn active={rightTab === "code"} onClick={() => setRightTab("code")} label="Code" />
+            </div>
+            {rightTab === "preview" && (
+              <button
+                onClick={() => setPreviewKey((k) => k + 1)}
+                className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 font-mono text-[10px] text-mute hover:text-foreground"
+              >
+                <RefreshCw className="h-3 w-3" /> reload
+              </button>
+            )}
+          </div>
+          <div className="min-h-0 flex-1 bg-background">
+            {rightTab === "preview" ? (
+              <iframe
+                key={previewKey}
+                ref={iframeRef}
+                src={previewUrl}
+                title="Preview"
+                sandbox="allow-scripts allow-forms allow-same-origin"
+                className="h-full w-full border-0 bg-white"
+              />
+            ) : (
+              <div className="grid h-full grid-cols-[200px_minmax(0,1fr)]">
+                <div className="min-h-0 overflow-auto border-r border-border bg-surface/20 py-2">
+                  {files.map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => setSelectedPath(f.path)}
+                      className={`flex w-full items-center gap-2 px-3 py-1 text-left font-mono text-[11px] ${f.path === selectedPath ? "bg-surface text-foreground" : "text-mute hover:text-foreground"}`}
+                    >
+                      <FileCode2 className="h-3 w-3" /> {f.path}
+                    </button>
+                  ))}
+                </div>
+                <div className="min-h-0 overflow-auto">
+                  <pre className="m-0 p-3 font-mono text-[11.5px] leading-5 text-foreground/85"><code>{selectedFile?.content ?? ""}</code></pre>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
 
-function TabPill({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: typeof MessageSquare; label: string }) {
+function RightTabBtn({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center justify-center gap-1.5 py-2.5 ${active ? "border-b-2 border-primary text-primary" : "text-mute"}`}
+      className={`rounded px-3 py-1 text-xs ${active ? "bg-surface text-foreground" : "text-mute hover:text-foreground"}`}
     >
-      <Icon className="h-3.5 w-3.5" /> {label}
+      {label}
     </button>
-  );
-}
-
-function ChangedFooter({ changed }: { changed: FileNode[] }) {
-  if (changed.length === 0) {
-    return (
-      <div className="border-t border-border bg-surface/40 px-3 py-2 font-mono text-[10px] text-mute">
-        No file changes in this session.
-      </div>
-    );
-  }
-  const added = changed.filter((c) => c.changed === "added").length;
-  const mod = changed.filter((c) => c.changed === "modified").length;
-  const del = changed.filter((c) => c.changed === "deleted").length;
-  return (
-    <div className="flex items-center gap-3 border-t border-border bg-surface/40 px-3 py-2 font-mono text-[10px] text-mute">
-      <span>changes</span>
-      <span className="text-status-ok">+{added}</span>
-      <span className="text-status-warn">~{mod}</span>
-      <span className="text-destructive">−{del}</span>
-      <div className="ml-auto flex flex-wrap gap-1">
-        {changed.slice(0, 4).map((c) => (
-          <span key={c.path} className="rounded border border-border bg-background px-1.5 py-0.5">{c.path.split("/").pop()}</span>
-        ))}
-        {changed.length > 4 && <span>+{changed.length - 4} more</span>}
-      </div>
-    </div>
   );
 }

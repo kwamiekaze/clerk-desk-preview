@@ -32,13 +32,13 @@ export function Header() {
 
         <div className="hidden items-center gap-2 md:flex">
           <a
-            href="#cta"
+            href="/auth"
             className="rounded-md px-3 py-1.5 text-sm text-mute transition-colors hover:text-foreground"
           >
             Sign in
           </a>
           <a
-            href="#cta"
+            href="/auth?mode=signup"
             className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Open desk
@@ -75,14 +75,14 @@ export function Header() {
             ))}
             <div className="mt-2 flex gap-2 border-t border-border pt-3">
               <a
-                href="#cta"
+                href="/auth"
                 onClick={() => setOpen(false)}
                 className="flex-1 rounded-md border border-border px-3 py-2 text-center text-sm text-foreground"
               >
                 Sign in
               </a>
               <a
-                href="#cta"
+                href="/auth?mode=signup"
                 onClick={() => setOpen(false)}
                 className="flex-1 rounded-md bg-primary px-3 py-2 text-center text-sm font-medium text-primary-foreground"
               >
