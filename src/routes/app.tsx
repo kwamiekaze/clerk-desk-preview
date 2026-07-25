@@ -53,7 +53,6 @@ function AppLayout() {
           <Link to="/app"><Wordmark /></Link>
           <nav className="hidden items-center gap-1 sm:flex">
             <NavLink to="/app" active={pathname === "/app"} icon={LayoutDashboard} label="Dashboard" />
-            <NavLink to="/app/projects" active={pathname.startsWith("/app/projects")} icon={FolderKanban} label="Projects" />
             {role === "admin" && (
               <NavLink to="/app/admin" active={pathname.startsWith("/app/admin")} icon={Shield} label="Admin" />
             )}
