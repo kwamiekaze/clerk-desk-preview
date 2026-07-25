@@ -198,7 +198,7 @@ export const editProject = createServerFn({ method: "POST" })
         { role: "user", content: "Current project files:\n" + context_json },
         { role: "user", content: "Edit instruction: " + data.instruction },
       ];
-      const raw = await generateText(SYSTEM_EDIT, messages, { attachments: atts });
+      const raw = await generateText(SYSTEM_EDIT, messages, { supabase: context.supabase, userId: context.userId, attachments: atts });
       const parsed = parseModelJson(raw);
 
       await writeFiles(context.supabase, data.id, parsed.files, true);
