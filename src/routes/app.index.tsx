@@ -8,6 +8,7 @@ import { MicButton } from "@/components/ui/MicButton";
 import { ImageAttachments, type UploadedImage } from "@/components/upload/ImageAttachments";
 import { CompilingOverlay } from "@/components/fx/CompilingOverlay";
 import { ScrambleText } from "@/components/fx/ScrambleText";
+import { NoKeyBanner } from "@/components/settings/ProviderKeysPanel";
 
 export const Route = createFileRoute("/app/")({
   head: () => ({ meta: [{ title: "Dashboard — CodingClerks" }] }),
@@ -147,7 +148,7 @@ function Dashboard() {
             <ImageAttachments value={images} onChange={setImages} />
           )}
 
-          {err && <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">{err}</div>}
+          {err && (err.startsWith("NO_KEY_CONFIGURED") ? <NoKeyBanner /> : <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">{err}</div>)}
           <div className="flex items-center justify-between">
             <div className="font-mono text-[11px] text-mute">
               {tab === "prompt" && "Detail wins: mention audience, tone, and pages."}

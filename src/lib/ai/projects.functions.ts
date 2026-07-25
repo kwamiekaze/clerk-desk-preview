@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   generateText,
   parseModelJson,
+  resolveActiveProvider,
   SYSTEM_GENERATE,
   SYSTEM_EDIT,
   SYSTEM_CLONE,
@@ -135,10 +136,12 @@ export const generateProject = createServerFn({ method: "POST" })
     }).parse,
   )
   .handler(async ({ data, context }) => {
-    await enforceFreePlanLimits(context.supabase, context.userId, "generate");
+    const resolved = await resolveActiveProvider(context.supabase, context.userId);
+    if (!resolved) throw new Error("NO_KEY_CONFIGURED: Add an API key in Settings → API Keys to start building.");
+    if (resolved.isPlatformFallback) await enforceFreePlanLimits(context.supabase, context.userId, "generate");
     const atts = toAttachments(data.attachments, requestOrigin());
 
-    const raw = await generateText(SYSTEM_GENERATE, [{ role: "user", content: data.prompt }], { attachments: atts });
+    const raw = await generateText(SYSTEM_GENERATE, [{ role: "user", content: data.prompt }], { supabase: context.supabase, userId: context.userId, attachments: atts });
     const parsed = parseModelJson(raw);
 
     const { data: proj, error: pe } = await context.supabase
@@ -195,7 +198,7 @@ export const editProject = createServerFn({ method: "POST" })
         { role: "user", content: "Current project files:\n" + context_json },
         { role: "user", content: "Edit instruction: " + data.instruction },
       ];
-      const raw = await generateText(SYSTEM_EDIT, messages, { attachments: atts });
+      const raw = await generateText(SYSTEM_EDIT, messages, { supabase: context.supabase, userId: context.userId, attachments: atts });
       const parsed = parseModelJson(raw);
 
       await writeFiles(context.supabase, data.id, parsed.files, true);
@@ -263,7 +266,9 @@ export const cloneProject = createServerFn({ method: "POST" })
     }).parse,
   )
   .handler(async ({ data, context }) => {
-    await enforceFreePlanLimits(context.supabase, context.userId, "clone");
+    const resolved = await resolveActiveProvider(context.supabase, context.userId);
+    if (!resolved) throw new Error("NO_KEY_CONFIGURED: Add an API key in Settings → API Keys to start building.");
+    if (resolved.isPlatformFallback) await enforceFreePlanLimits(context.supabase, context.userId, "clone");
     const scraped = await fetchSiteContent(data.url);
     const atts = toAttachments(data.attachments, requestOrigin());
 
@@ -276,7 +281,7 @@ export const cloneProject = createServerFn({ method: "POST" })
             `Source URL: ${scraped.url}\nPage title: ${scraped.title}\n\nExtracted text content:\n${scraped.text}\n\n${data.notes ? "Additional notes from the user: " + data.notes + "\n\n" : ""}Recreate this site as an original modern static app.`,
         },
       ],
-      { attachments: atts },
+      { supabase: context.supabase, userId: context.userId, attachments: atts },
     );
     const parsed = parseModelJson(raw);
 

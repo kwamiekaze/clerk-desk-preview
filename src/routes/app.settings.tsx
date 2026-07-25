@@ -6,6 +6,7 @@ import { saveGithubToken, clearGithubToken, getGithubTokenStatus } from "@/lib/a
 import { getUsage } from "@/lib/ai/projects.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Save, Check, Upload, Github } from "lucide-react";
+import { ProviderKeysPanel } from "@/components/settings/ProviderKeysPanel";
 
 export const Route = createFileRoute("/app/settings")({
   head: () => ({ meta: [{ title: "Settings — CodingClerks" }] }),
@@ -145,6 +146,8 @@ function SettingsPage() {
           </div>
         </section>
       )}
+
+      <ProviderKeysPanel />
 
       <section className="mt-6 rounded-2xl border border-border bg-surface/60 p-6 backdrop-blur-md">
         <div className="flex items-center gap-2"><Github className="h-4 w-4 text-primary" /><h2 className="font-mono text-xs uppercase tracking-wider text-primary">GitHub</h2></div>
