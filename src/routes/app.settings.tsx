@@ -6,6 +6,7 @@ import { saveGithubToken, clearGithubToken, getGithubTokenStatus } from "@/lib/a
 import { getUsage } from "@/lib/ai/projects.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Save, Check, Upload, Github } from "lucide-react";
+import { ProviderKeysPanel } from "@/components/settings/ProviderKeysPanel";
 
 export const Route = createFileRoute("/app/settings")({
   head: () => ({ meta: [{ title: "Settings — CodingClerks" }] }),
