@@ -11,6 +11,8 @@ import { PointsTeaser } from "@/components/site/PointsTeaser";
 import { Security } from "@/components/site/Security";
 import { Pricing } from "@/components/site/Pricing";
 import { FinalCTA } from "@/components/site/FinalCTA";
+import { MatrixRain } from "@/components/fx/MatrixRain";
+import { HERO_VIDEO_URL } from "@/lib/media-constants";
 
 export const Route = createFileRoute("/")({
   head: () => ({
