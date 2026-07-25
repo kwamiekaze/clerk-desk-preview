@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { MatrixRain } from "./MatrixRain";
+import { BackgroundVideo } from "./BackgroundVideo";
 import { BUILDING_VIDEO_URL } from "@/lib/media-constants";
 
 const STAGES = [
@@ -19,24 +20,22 @@ export function CompilingOverlay({ open, label }: { open: boolean; label?: strin
     return () => clearInterval(t);
   }, [open]);
   if (!open) return null;
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-sm">
-      {BUILDING_VIDEO_URL ? (
-        <video
-          key={BUILDING_VIDEO_URL}
-          src={BUILDING_VIDEO_URL}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40"
-        />
-      ) : (
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,255,65,0.18),transparent_60%)]" />
-      )}
-      <MatrixRain className="absolute inset-0 h-full w-full opacity-70" density={1.1} />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-black">
+      <BackgroundVideo
+        src={BUILDING_VIDEO_URL}
+        className="absolute inset-0 h-full w-full"
+        opacity={0.5}
+        fallback={
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,255,65,0.22),transparent_65%)]" />
+        }
+      />
+      {/* Dim overlay to keep text readable */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-black/50" />
+      <MatrixRain className="absolute inset-0 h-full w-full opacity-60" density={1.1} />
       <div className="relative z-10 flex flex-col items-center gap-6 px-6 text-center">
-        <div className="font-mono text-[10px] uppercase tracking-[0.4em] text-primary/70">CodingClerks · compiling</div>
+        <div className="font-mono text-[10px] uppercase tracking-[0.4em] text-primary/80">CodingClerks · compiling</div>
         <div className="font-mono text-xl text-primary drop-shadow-[0_0_12px_rgba(0,255,65,0.6)] sm:text-2xl">
           {STAGES[i]}
         </div>
