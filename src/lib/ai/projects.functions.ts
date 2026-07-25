@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   generateText,
   parseModelJson,
+  resolveActiveProvider,
   SYSTEM_GENERATE,
   SYSTEM_EDIT,
   SYSTEM_CLONE,
