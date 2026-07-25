@@ -8,6 +8,7 @@ import { MicButton } from "@/components/ui/MicButton";
 import { ImageAttachments, type UploadedImage } from "@/components/upload/ImageAttachments";
 import { CompilingOverlay } from "@/components/fx/CompilingOverlay";
 import { ScrambleText } from "@/components/fx/ScrambleText";
+import { NoKeyBanner } from "@/components/settings/ProviderKeysPanel";
 
 export const Route = createFileRoute("/app/")({
   head: () => ({ meta: [{ title: "Dashboard — CodingClerks" }] }),
