@@ -136,10 +136,12 @@ export const generateProject = createServerFn({ method: "POST" })
     }).parse,
   )
   .handler(async ({ data, context }) => {
-    await enforceFreePlanLimits(context.supabase, context.userId, "generate");
+    const resolved = await resolveActiveProvider(context.supabase, context.userId);
+    if (!resolved) throw new Error("NO_KEY_CONFIGURED: Add an API key in Settings → API Keys to start building.");
+    if (resolved.isPlatformFallback) await enforceFreePlanLimits(context.supabase, context.userId, "generate");
     const atts = toAttachments(data.attachments, requestOrigin());
 
-    const raw = await generateText(SYSTEM_GENERATE, [{ role: "user", content: data.prompt }], { attachments: atts });
+    const raw = await generateText(SYSTEM_GENERATE, [{ role: "user", content: data.prompt }], { supabase: context.supabase, userId: context.userId, attachments: atts });
     const parsed = parseModelJson(raw);
 
     const { data: proj, error: pe } = await context.supabase
