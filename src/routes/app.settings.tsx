@@ -147,6 +147,8 @@ function SettingsPage() {
         </section>
       )}
 
+      <ProviderKeysPanel />
+
       <section className="mt-6 rounded-2xl border border-border bg-surface/60 p-6 backdrop-blur-md">
         <div className="flex items-center gap-2"><Github className="h-4 w-4 text-primary" /><h2 className="font-mono text-xs uppercase tracking-wider text-primary">GitHub</h2></div>
         <p className="mt-2 text-xs text-mute">Paste a Personal Access Token with <code>repo</code> scope. Stored securely; never shown again. Used to push your projects and pull repos back in.</p>
