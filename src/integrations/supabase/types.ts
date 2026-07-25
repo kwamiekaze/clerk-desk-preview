@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          default_ai_provider: string | null
           display_name: string | null
           email: string | null
           id: string
@@ -27,6 +28,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          default_ai_provider?: string | null
           display_name?: string | null
           email?: string | null
           id: string
@@ -36,6 +38,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          default_ai_provider?: string | null
           display_name?: string | null
           email?: string | null
           id?: string
@@ -236,6 +239,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_provider_keys: {
+        Row: {
+          api_key: string
+          created_at: string
+          id: string
+          model: string | null
+          provider: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_key: string
+          created_at?: string
+          id?: string
+          model?: string | null
+          provider: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_key?: string
+          created_at?: string
+          id?: string
+          model?: string | null
+          provider?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_secrets: {
         Row: {
