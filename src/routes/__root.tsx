@@ -77,14 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "CodingClerks — Your coding desk, staffed by agents" },
+      { name: "description", content: "CodingClerks is an agentic bureau that turns prompts and public URLs into working React apps. Sandboxed builds, live preview, GitHub export, Vercel deployment." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "CodingClerks — Your coding desk, staffed by agents" },
+      { property: "og:description", content: "CodingClerks is an agentic bureau that turns prompts and public URLs into working React apps. Sandboxed builds, live preview, GitHub export, Vercel deployment." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "CodingClerks — Your coding desk, staffed by agents" },
+      { name: "twitter:description", content: "CodingClerks is an agentic bureau that turns prompts and public URLs into working React apps. Sandboxed builds, live preview, GitHub export, Vercel deployment." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/99ca0d23-6600-4367-9090-e43ed9db01dc/id-preview-feca43e6--f8359bc0-28fa-4cb2-9316-6c5b998e135c.lovable.app-1785010451697.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/99ca0d23-6600-4367-9090-e43ed9db01dc/id-preview-feca43e6--f8359bc0-28fa-4cb2-9316-6c5b998e135c.lovable.app-1785010451697.png" },
     ],
     links: [
       {

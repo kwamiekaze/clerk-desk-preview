@@ -25,7 +25,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "An agentic SaaS web app builder. Prompts and URLs become production-ready React. On the ledger, in your repo.",
+          "CodingClerks is an agentic bureau that turns prompts and public URLs into working React apps. Sandboxed builds, live preview, GitHub export, Vercel deployment.",
       },
     ],
   }),
