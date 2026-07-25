@@ -1,12 +1,31 @@
 import { PromptBuilder } from "./PromptBuilder";
+import { BackgroundVideo } from "@/components/fx/BackgroundVideo";
+import { MatrixRain } from "@/components/fx/MatrixRain";
+import { HERO_VIDEO_URL } from "@/lib/media-constants";
 
 export function Hero() {
   return (
     <section id="top" className="relative overflow-hidden">
-      {/* grid + blooms */}
-      <div className="pointer-events-none absolute inset-0 bg-grid opacity-60" aria-hidden />
-      <div className="pointer-events-none absolute inset-x-0 -top-32 mx-auto h-[520px] max-w-5xl bloom-primary opacity-70" aria-hidden />
-      <div className="pointer-events-none absolute -right-40 top-40 h-[420px] w-[420px] bloom-secondary opacity-50" aria-hidden />
+      {/* video background + fallbacks */}
+      <BackgroundVideo
+        src={HERO_VIDEO_URL}
+        className="absolute inset-0 h-full w-full"
+        opacity={0.55}
+        fallback={
+          <>
+            <div className="pointer-events-none absolute inset-0 bg-grid opacity-60" aria-hidden />
+            <div className="pointer-events-none absolute inset-x-0 -top-32 mx-auto h-[520px] max-w-5xl bloom-primary opacity-70" aria-hidden />
+            <div className="pointer-events-none absolute -right-40 top-40 h-[420px] w-[420px] bloom-secondary opacity-50" aria-hidden />
+          </>
+        }
+      />
+      {/* darken video so text stays readable */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/70 via-background/55 to-background/85"
+      />
+      {/* MatrixRain composited above the video at low opacity */}
+      <MatrixRain className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.18]" density={1} />
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px"
         style={{
@@ -15,6 +34,7 @@ export function Hero() {
         }}
         aria-hidden
       />
+
 
       <div className="relative mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24 lg:px-8 lg:pt-28">
         <div className="grid items-start gap-12 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
