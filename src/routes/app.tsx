@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Wordmark } from "@/components/brand/Wordmark";
-import { LogOut, LayoutDashboard, FolderKanban, Shield, Loader2 } from "lucide-react";
+import { LogOut, LayoutDashboard, Shield, Loader2 } from "lucide-react";
 import { getUsage } from "@/lib/ai/projects.functions";
 import { useServerFn } from "@tanstack/react-start";
 
