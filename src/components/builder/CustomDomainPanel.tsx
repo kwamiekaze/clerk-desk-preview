@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Globe, Loader2, Plus, RefreshCw, Trash2, Copy, Check } from "lucide-react";
+import { Globe, Loader2, Plus, RefreshCw, Trash2, Copy, Check, Lock } from "lucide-react";
 import { listMyDomains, addDomain, removeDomain, checkDomainStatus } from "@/lib/ai/domains.functions";
 
 type DomainRow = {
@@ -86,12 +86,18 @@ export function CustomDomainPanel({ projectId, slug }: { projectId: string; slug
             </button>
             <button
               type="button"
-              onClick={() => setMode("cname")}
-              className={`rounded-lg border p-3 text-left transition-colors ${mode === "cname" ? "border-primary/60 bg-primary/5" : "border-border hover:border-border-strong"}`}
+              disabled={!fullAvailable}
+              onClick={() => fullAvailable && setMode("cname")}
+              className={`rounded-lg border p-3 text-left transition-colors ${mode === "cname" ? "border-primary/60 bg-primary/5" : "border-border hover:border-border-strong"} ${!fullAvailable ? "cursor-not-allowed opacity-60" : ""}`}
             >
-              <div className="text-sm font-medium">Full custom domain</div>
+              <div className="flex items-center gap-1.5 text-sm font-medium">
+                {!fullAvailable && <Lock className="h-3 w-3" />}
+                Full custom domain
+              </div>
               <div className="mt-1 text-xs text-mute">
-                Your own URL stays in the address bar, with HTTPS. {fullAvailable ? "Available on this deployment." : "Not active on this deployment yet."}
+                {fullAvailable
+                  ? "Your own URL stays in the address bar, with HTTPS."
+                  : "Requires a Cloudflare for SaaS paid plan and platform credentials. Use Quick redirect for now."}
               </div>
             </button>
           </div>
@@ -119,7 +125,7 @@ export function CustomDomainPanel({ projectId, slug }: { projectId: string; slug
                 Look for "Forwarding", "Redirect", or "URL redirect" in your domain's DNS settings, then forward the domain to the URL above with a permanent (301) redirect, forward-only.
               </p>
               <p className="mt-2 rounded border border-warn/40 bg-warn/10 p-2 text-xs text-warn">
-                Heads up: with a redirect, the browser address bar will show <code className="font-mono">{appHost}/{slug}</code> after the jump — not your own domain. Choose "Full custom domain" if you need your domain to stay visible.
+                Heads up: with a redirect, the browser address bar will show <code className="font-mono">{appHost}/{slug}</code> after the jump — not your own domain. {fullAvailable ? 'Choose "Full custom domain" if you need your domain to stay visible.' : "Full custom domains are not enabled on this deployment yet."}
               </p>
             </div>
           )}
@@ -132,7 +138,7 @@ export function CustomDomainPanel({ projectId, slug }: { projectId: string; slug
                   <div className="mt-1">Subdomains only for now (e.g. <code className="font-mono text-foreground">www.example.com</code>). For a root domain, use your registrar's "forward apex to www" rule alongside the CNAME on <code className="font-mono">www</code>.</div>
                 </>
               ) : (
-                <>Full custom domains aren't switched on for this deployment yet. You can still save your domain here, and the quick redirect option works right now.</>
+                <>Full custom domains aren't enabled on this deployment yet. Use the Quick redirect option, which works right now.</>
               )}
             </div>
           )}
