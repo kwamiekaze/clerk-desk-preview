@@ -172,8 +172,8 @@ export const generateProject = createServerFn({ method: "POST" })
     if (resolved.isPlatformFallback) await enforceFreePlanLimits(context.supabase, context.userId, "generate");
     const atts = toAttachments(data.attachments, requestOrigin());
 
-    const raw = await generateText(SYSTEM_GENERATE, [{ role: "user", content: data.prompt }], { supabase: context.supabase, userId: context.userId, attachments: atts });
-    const parsed = parseModelJson(raw);
+    const out = await generateText(SYSTEM_GENERATE, [{ role: "user", content: data.prompt }], { supabase: context.supabase, userId: context.userId, attachments: atts });
+    const parsed = parseModelJson(out.text);
 
     const { data: proj, error: pe } = await context.supabase
       .from("projects")
@@ -188,11 +188,7 @@ export const generateProject = createServerFn({ method: "POST" })
       { project_id: proj.id, role: "user", content: userMsg },
       { project_id: proj.id, role: "assistant", content: parsed.summary },
     ]);
-    await context.supabase.from("usage_events").insert({
-      user_id: context.userId,
-      project_id: proj.id,
-      kind: "generate",
-    });
+    await logUsage(context.supabase, context.userId, proj.id, "generate", out);
 
     return { id: proj.id };
   });
