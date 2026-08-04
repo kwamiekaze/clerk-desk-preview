@@ -86,12 +86,18 @@ export function CustomDomainPanel({ projectId, slug }: { projectId: string; slug
             </button>
             <button
               type="button"
-              onClick={() => setMode("cname")}
-              className={`rounded-lg border p-3 text-left transition-colors ${mode === "cname" ? "border-primary/60 bg-primary/5" : "border-border hover:border-border-strong"}`}
+              disabled={!fullAvailable}
+              onClick={() => fullAvailable && setMode("cname")}
+              className={`rounded-lg border p-3 text-left transition-colors ${mode === "cname" ? "border-primary/60 bg-primary/5" : "border-border hover:border-border-strong"} ${!fullAvailable ? "cursor-not-allowed opacity-60" : ""}`}
             >
-              <div className="text-sm font-medium">Full custom domain</div>
+              <div className="flex items-center gap-1.5 text-sm font-medium">
+                {!fullAvailable && <Lock className="h-3 w-3" />}
+                Full custom domain
+              </div>
               <div className="mt-1 text-xs text-mute">
-                Your own URL stays in the address bar, with HTTPS. {fullAvailable ? "Available on this deployment." : "Not active on this deployment yet."}
+                {fullAvailable
+                  ? "Your own URL stays in the address bar, with HTTPS."
+                  : "Requires a Cloudflare for SaaS paid plan and platform credentials. Use Quick redirect for now."}
               </div>
             </button>
           </div>
