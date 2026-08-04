@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Globe, Loader2, Plus, RefreshCw, Trash2, Copy, Check } from "lucide-react";
+import { Globe, Loader2, Plus, RefreshCw, Trash2, Copy, Check, Lock } from "lucide-react";
 import { listMyDomains, addDomain, removeDomain, checkDomainStatus } from "@/lib/ai/domains.functions";
 
 type DomainRow = {
