@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      custom_domains: {
+        Row: {
+          cloudflare_hostname_id: string | null
+          created_at: string
+          domain: string
+          error_message: string | null
+          id: string
+          mode: string
+          project_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cloudflare_hostname_id?: string | null
+          created_at?: string
+          domain: string
+          error_message?: string | null
+          id?: string
+          mode?: string
+          project_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cloudflare_hostname_id?: string | null
+          created_at?: string
+          domain?: string
+          error_message?: string | null
+          id?: string
+          mode?: string
+          project_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_domains_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -212,22 +259,28 @@ export type Database = {
         Row: {
           created_at: string
           id: number
+          is_platform_fallback: boolean
           kind: string
           project_id: string | null
+          tokens_used: number
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: never
+          is_platform_fallback?: boolean
           kind: string
           project_id?: string | null
+          tokens_used?: number
           user_id: string
         }
         Update: {
           created_at?: string
           id?: never
+          is_platform_fallback?: boolean
           kind?: string
           project_id?: string | null
+          tokens_used?: number
           user_id?: string
         }
         Relationships: [
