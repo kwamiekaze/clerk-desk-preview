@@ -19,7 +19,7 @@ function AppLayout() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
   const [role, setRole] = useState<"user" | "admin">("user");
-  const [usage, setUsage] = useState<{ plan: string; buildsUsed: number; buildsCap: number; projectCount: number; projectCap: number } | null>(null);
+  const [usage, setUsage] = useState<{ plan: string; projectCount: number; projectCap: number; tokensUsedToday: number; dailyTokenCap: number; isByok: boolean } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [published, setPublished] = useState<PublishedRow[]>([]);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
