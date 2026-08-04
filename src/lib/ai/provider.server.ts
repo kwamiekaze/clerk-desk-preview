@@ -169,10 +169,14 @@ export async function callProvider(
     });
     if (!resp.ok) throw new Error(await readError(resp));
     const j = await resp.json();
-    return (j.content || [])
-      .filter((b: { type: string }) => b.type === "text")
-      .map((b: { text: string }) => b.text)
-      .join("");
+    return {
+      text: (j.content || [])
+        .filter((b: { type: string }) => b.type === "text")
+        .map((b: { text: string }) => b.text)
+        .join(""),
+      inputTokens: num(j?.usage?.input_tokens),
+      outputTokens: num(j?.usage?.output_tokens),
+    };
   }
 
   const augmented = messages.slice();
