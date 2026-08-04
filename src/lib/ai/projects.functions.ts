@@ -361,22 +361,31 @@ export const getUsage = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const [{ count: buildsUsed }, { data: profile }, { count: projectCount }] = await Promise.all([
-      context.supabase
-        .from("usage_events")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", context.userId)
-        .in("kind", ["generate", "clone"])
-        .gte("created_at", since),
-      context.supabase.from("profiles").select("plan,role,email,display_name,avatar_url").eq("id", context.userId).maybeSingle(),
-      context.supabase
-        .from("projects")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", context.userId),
-    ]);
+    const [{ count: buildsUsed }, { data: profile }, { count: projectCount }, tokensToday, resolved] =
+      await Promise.all([
+        context.supabase
+          .from("usage_events")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", context.userId)
+          .in("kind", ["generate", "clone"])
+          .gte("created_at", since),
+        context.supabase.from("profiles").select("plan,role,email,display_name,avatar_url").eq("id", context.userId).maybeSingle(),
+        context.supabase
+          .from("projects")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", context.userId),
+        platformTokensUsedToday(context.supabase, context.userId),
+        resolveActiveProvider(context.supabase, context.userId),
+      ]);
+    const isByok = Boolean(resolved && !resolved.isPlatformFallback);
     return {
       buildsUsed: buildsUsed ?? 0,
-      buildsCap: FREE_MONTHLY_GENERATE_CAP,
+      buildsCap: FREE_DAILY_TOKENS,
+      tokensUsedToday: tokensToday,
+      dailyTokenCap: FREE_DAILY_TOKENS,
+      tokensRemainingToday: Math.max(0, FREE_DAILY_TOKENS - tokensToday),
+      isByok,
+      activeProvider: resolved?.provider ?? null,
       projectCount: projectCount ?? 0,
       projectCap: FREE_PROJECT_CAP,
       plan: profile?.plan ?? "free",
