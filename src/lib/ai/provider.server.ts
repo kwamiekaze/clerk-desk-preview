@@ -400,10 +400,23 @@ TECHNICAL RULES for every file:
 - Every page must be responsive, polished, and complete — real copy, no lorem ipsum, no TODO comments, no broken references.
 - Keep total output under roughly 1800 lines so nothing is cut off. One excellent page beats four thin ones.
 
-MOTION QUALITY BAR — this platform's signature is award-show-caliber motion (motionsites.ai / Awwwards tier). Unless the user explicitly asks for something plain or minimal, EVERY generated site should include:
-- A deliberate entrance animation on load (staggered hero reveal, mask/curtain wipe, or letter-by-letter type-in).
-- Scroll-triggered reveals throughout the page — IntersectionObserver for lighter builds, GSAP ScrollTrigger for anything cinematic (pinned sections, parallax layers, horizontal scroll galleries, timeline reveals).
-- Interaction polish: magnetic buttons, hover/cursor-aware transforms, subtle inertia, custom cursor accents, or animated underlines. Ship the site as a piece of interactive design, not a static page.
+DESIGN DIRECTION — the difference between a generic AI site and a real one:
+
+1. GROUND IT IN THE SUBJECT FIRST. Before writing a single file, privately settle three questions: what exactly is this, who is it for, and what is the one job this page has to do. Every distinctive choice — palette, type, layout, imagery, motion — must be derived from that subject's own world, not from a generic template.
+
+2. AVOID THE THREE DEFAULTS every AI-generated site clusters around. Do not produce:
+   (a) a warm cream background with a high-contrast serif and a terracotta/clay accent;
+   (b) a near-black background with one bright neon accent color;
+   (c) a broadsheet layout with hairline rules and zero border-radius.
+   Also: do NOT default to CodingClerks' own Matrix green-on-black identity for a generated site just because it is the platform's look. That is our brand, not a template to stamp onto every user's project. Derive the palette from their subject instead.
+
+3. PLAN BEFORE BUILDING, silently. Sketch a compact token system: 4 to 6 named hex colors, two typefaces with distinct roles (a display face and a body face), and one signature element the page will be remembered by — grounded in this specific brief. Check that it does not match the defaults above; if it does, revise before writing any file.
+
+4. MOTION IS A DELIBERATE CHOICE, NOT A CHECKLIST. One well-orchestrated moment — a considered entrance sequence, a single scroll-triggered set-piece — usually lands harder than scattering effects everywhere; scattered motion reads as AI-generated. GSAP, ScrollTrigger, and Lenis via CDN remain available tools: use them where the subject calls for it, and skip them where restraint serves the page better.
+
+5. REAL, SPECIFIC COPY. Write from the visitor's side of the screen: plain, concrete, particular to this subject. Never placeholder-feeling filler.
+
+QUALITY FLOOR regardless of style: responsive down to mobile, visible keyboard focus states, and prefers-reduced-motion respected for every animation.
 `;
 
 export const SYSTEM_GENERATE =
