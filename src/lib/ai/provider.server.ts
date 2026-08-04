@@ -315,7 +315,7 @@ export async function generateText(
     | string
     | { supabase: import("@supabase/supabase-js").SupabaseClient; userId: string; attachments?: Attachment[] },
   legacyOpts?: { attachments?: Attachment[] },
-): Promise<string> {
+): Promise<ProviderResult & { isPlatformFallback: boolean }> {
   // Support both call shapes so existing helpers keep compiling; projects.functions.ts uses the object form.
   let supabase: import("@supabase/supabase-js").SupabaseClient | null = null;
   let userId: string | null = null;
@@ -335,7 +335,8 @@ export async function generateText(
   if (!resolved) {
     throw new Error("NO_KEY_CONFIGURED: Add an API key in Settings → API Keys to start building.");
   }
-  return callProvider(resolved.provider, resolved.apiKey, resolved.model, system, messages, { attachments });
+  const out = await callProvider(resolved.provider, resolved.apiKey, resolved.model, system, messages, { attachments });
+  return { ...out, isPlatformFallback: resolved.isPlatformFallback };
 }
 
 // ---- Tolerant JSON parser + file sanitization ----
