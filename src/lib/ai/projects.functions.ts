@@ -225,8 +225,8 @@ export const editProject = createServerFn({ method: "POST" })
         { role: "user", content: "Current project files:\n" + context_json },
         { role: "user", content: "Edit instruction: " + data.instruction },
       ];
-      const raw = await generateText(SYSTEM_EDIT, messages, { supabase: context.supabase, userId: context.userId, attachments: atts });
-      const parsed = parseModelJson(raw);
+      const out = await generateText(SYSTEM_EDIT, messages, { supabase: context.supabase, userId: context.userId, attachments: atts });
+      const parsed = parseModelJson(out.text);
 
       await writeFiles(context.supabase, data.id, parsed.files, true);
       await context.supabase
@@ -238,11 +238,7 @@ export const editProject = createServerFn({ method: "POST" })
         { project_id: data.id, role: "user", content: userMsg },
         { project_id: data.id, role: "assistant", content: parsed.summary },
       ]);
-      await context.supabase.from("usage_events").insert({
-        user_id: context.userId,
-        project_id: data.id,
-        kind: "edit",
-      });
+      await logUsage(context.supabase, context.userId, data.id, "edit", out);
       return { ok: true, summary: parsed.summary };
     } catch (err) {
       await context.supabase.from("projects").update({ status: "error" }).eq("id", data.id);
