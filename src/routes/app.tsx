@@ -81,9 +81,13 @@ function AppLayout() {
               <div className="hidden items-center gap-2 rounded-md border border-border bg-surface px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-mute sm:flex">
                 <span>{usage.plan}</span>
                 <span className="text-border">·</span>
-                <span className={usage.buildsUsed >= usage.buildsCap && usage.plan === "free" ? "text-destructive" : ""}>
-                  builds {usage.buildsUsed}/{usage.plan === "pro" ? "∞" : usage.buildsCap}
-                </span>
+                {usage.isByok ? (
+                  <span className="text-primary">unlimited · your key</span>
+                ) : (
+                  <span className={usage.tokensUsedToday >= usage.dailyTokenCap ? "text-destructive" : ""}>
+                    {Math.round(usage.tokensUsedToday / 1000)}k/{Math.round(usage.dailyTokenCap / 1000)}k today
+                  </span>
+                )}
               </div>
             )}
             <button
