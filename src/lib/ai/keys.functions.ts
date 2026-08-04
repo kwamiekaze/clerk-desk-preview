@@ -10,7 +10,16 @@ import {
   type ProviderId,
 } from "./provider.server";
 
-const ProviderEnum = z.enum(["openrouter", "openai", "anthropic", "gemini", "kimi"]);
+const ProviderEnum = z.enum([
+  "openrouter",
+  "openai",
+  "anthropic",
+  "gemini",
+  "kimi",
+  "glm",
+  "qwen",
+  "deepseek",
+]);
 
 export type KeyStatus = {
   provider: ProviderId;
@@ -167,7 +176,7 @@ export const testProviderKey = createServerFn({ method: "POST" })
         [{ role: "user", content: "ping" }],
         { maxTokens: 5 },
       );
-      return { ok: true, message: out.trim().slice(0, 40) || "OK" };
+      return { ok: true, message: out.text.trim().slice(0, 40) || "OK" };
     } catch (e) {
       return { ok: false, message: (e as Error).message.slice(0, 240) };
     }

@@ -40,6 +40,11 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      // Custom domains: serve a user's published site when the Host is one of theirs.
+      const { serveCustomDomainRequest } = await import("./lib/serve-published");
+      const custom = await serveCustomDomainRequest(request).catch(() => null);
+      if (custom) return custom;
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

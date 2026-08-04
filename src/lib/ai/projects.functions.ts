@@ -14,11 +14,46 @@ import {
 } from "./provider.server";
 
 const FREE_PROJECT_CAP = 10;
-const FREE_MONTHLY_GENERATE_CAP = 25;
+/** Daily token budget for users building on the platform's shared AI key. BYOK users are uncapped. */
+export const FREE_DAILY_TOKENS = 60000;
 
 const AttachmentSchema = z.array(
   z.object({ path: z.string().max(500), url: z.string().max(1200) }),
 ).max(4).optional();
+
+function utcMidnightIso(): string {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString();
+}
+
+async function platformTokensUsedToday(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  userId: string,
+): Promise<number> {
+  const { data } = await supabase
+    .from("usage_events")
+    .select("tokens_used")
+    .eq("user_id", userId)
+    .eq("is_platform_fallback", true)
+    .gte("created_at", utcMidnightIso());
+  return (data ?? []).reduce((sum, r) => sum + (r.tokens_used ?? 0), 0);
+}
+
+async function logUsage(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  userId: string,
+  projectId: string,
+  kind: "generate" | "edit" | "clone",
+  result: { inputTokens: number; outputTokens: number; isPlatformFallback: boolean },
+) {
+  await supabase.from("usage_events").insert({
+    user_id: userId,
+    project_id: projectId,
+    kind,
+    tokens_used: (result.inputTokens ?? 0) + (result.outputTokens ?? 0),
+    is_platform_fallback: result.isPlatformFallback,
+  });
+}
 
 async function enforceFreePlanLimits(
   supabase: import("@supabase/supabase-js").SupabaseClient,
@@ -36,15 +71,11 @@ async function enforceFreePlanLimits(
     throw new Error(`Free plan is limited to ${FREE_PROJECT_CAP} projects. Upgrade to Pro to build more.`);
   }
 
-  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-  const { count: uc } = await supabase
-    .from("usage_events")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .in("kind", ["generate", "clone"])
-    .gte("created_at", since);
-  if ((uc ?? 0) >= FREE_MONTHLY_GENERATE_CAP) {
-    throw new Error(`Free plan is limited to ${FREE_MONTHLY_GENERATE_CAP} builds per 30 days. Upgrade to Pro for unlimited.`);
+  const used = await platformTokensUsedToday(supabase, userId);
+  if (used >= FREE_DAILY_TOKENS) {
+    throw new Error(
+      `Daily free limit reached (${FREE_DAILY_TOKENS.toLocaleString()} tokens). It resets at midnight UTC — or add your own API key in Settings for unlimited builds.`,
+    );
   }
   void action;
 }
@@ -141,8 +172,8 @@ export const generateProject = createServerFn({ method: "POST" })
     if (resolved.isPlatformFallback) await enforceFreePlanLimits(context.supabase, context.userId, "generate");
     const atts = toAttachments(data.attachments, requestOrigin());
 
-    const raw = await generateText(SYSTEM_GENERATE, [{ role: "user", content: data.prompt }], { supabase: context.supabase, userId: context.userId, attachments: atts });
-    const parsed = parseModelJson(raw);
+    const out = await generateText(SYSTEM_GENERATE, [{ role: "user", content: data.prompt }], { supabase: context.supabase, userId: context.userId, attachments: atts });
+    const parsed = parseModelJson(out.text);
 
     const { data: proj, error: pe } = await context.supabase
       .from("projects")
@@ -157,11 +188,7 @@ export const generateProject = createServerFn({ method: "POST" })
       { project_id: proj.id, role: "user", content: userMsg },
       { project_id: proj.id, role: "assistant", content: parsed.summary },
     ]);
-    await context.supabase.from("usage_events").insert({
-      user_id: context.userId,
-      project_id: proj.id,
-      kind: "generate",
-    });
+    await logUsage(context.supabase, context.userId, proj.id, "generate", out);
 
     return { id: proj.id };
   });
@@ -198,8 +225,8 @@ export const editProject = createServerFn({ method: "POST" })
         { role: "user", content: "Current project files:\n" + context_json },
         { role: "user", content: "Edit instruction: " + data.instruction },
       ];
-      const raw = await generateText(SYSTEM_EDIT, messages, { supabase: context.supabase, userId: context.userId, attachments: atts });
-      const parsed = parseModelJson(raw);
+      const out = await generateText(SYSTEM_EDIT, messages, { supabase: context.supabase, userId: context.userId, attachments: atts });
+      const parsed = parseModelJson(out.text);
 
       await writeFiles(context.supabase, data.id, parsed.files, true);
       await context.supabase
@@ -211,11 +238,7 @@ export const editProject = createServerFn({ method: "POST" })
         { project_id: data.id, role: "user", content: userMsg },
         { project_id: data.id, role: "assistant", content: parsed.summary },
       ]);
-      await context.supabase.from("usage_events").insert({
-        user_id: context.userId,
-        project_id: data.id,
-        kind: "edit",
-      });
+      await logUsage(context.supabase, context.userId, data.id, "edit", out);
       return { ok: true, summary: parsed.summary };
     } catch (err) {
       await context.supabase.from("projects").update({ status: "error" }).eq("id", data.id);
@@ -272,7 +295,7 @@ export const cloneProject = createServerFn({ method: "POST" })
     const scraped = await fetchSiteContent(data.url);
     const atts = toAttachments(data.attachments, requestOrigin());
 
-    const raw = await generateText(
+    const out = await generateText(
       SYSTEM_CLONE,
       [
         {
@@ -283,7 +306,7 @@ export const cloneProject = createServerFn({ method: "POST" })
       ],
       { supabase: context.supabase, userId: context.userId, attachments: atts },
     );
-    const parsed = parseModelJson(raw);
+    const parsed = parseModelJson(out.text);
 
     const { data: proj, error: pe } = await context.supabase
       .from("projects")
@@ -302,11 +325,7 @@ export const cloneProject = createServerFn({ method: "POST" })
       { project_id: proj.id, role: "user", content: `Clone ${data.url}` + (data.notes ? "\n\n" + data.notes : "") },
       { project_id: proj.id, role: "assistant", content: parsed.summary },
     ]);
-    await context.supabase.from("usage_events").insert({
-      user_id: context.userId,
-      project_id: proj.id,
-      kind: "clone",
-    });
+    await logUsage(context.supabase, context.userId, proj.id, "clone", out);
     return { id: proj.id };
   });
 
@@ -342,22 +361,31 @@ export const getUsage = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const [{ count: buildsUsed }, { data: profile }, { count: projectCount }] = await Promise.all([
-      context.supabase
-        .from("usage_events")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", context.userId)
-        .in("kind", ["generate", "clone"])
-        .gte("created_at", since),
-      context.supabase.from("profiles").select("plan,role,email,display_name,avatar_url").eq("id", context.userId).maybeSingle(),
-      context.supabase
-        .from("projects")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", context.userId),
-    ]);
+    const [{ count: buildsUsed }, { data: profile }, { count: projectCount }, tokensToday, resolved] =
+      await Promise.all([
+        context.supabase
+          .from("usage_events")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", context.userId)
+          .in("kind", ["generate", "clone"])
+          .gte("created_at", since),
+        context.supabase.from("profiles").select("plan,role,email,display_name,avatar_url").eq("id", context.userId).maybeSingle(),
+        context.supabase
+          .from("projects")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", context.userId),
+        platformTokensUsedToday(context.supabase, context.userId),
+        resolveActiveProvider(context.supabase, context.userId),
+      ]);
+    const isByok = Boolean(resolved && !resolved.isPlatformFallback);
     return {
       buildsUsed: buildsUsed ?? 0,
-      buildsCap: FREE_MONTHLY_GENERATE_CAP,
+      buildsCap: FREE_DAILY_TOKENS,
+      tokensUsedToday: tokensToday,
+      dailyTokenCap: FREE_DAILY_TOKENS,
+      tokensRemainingToday: Math.max(0, FREE_DAILY_TOKENS - tokensToday),
+      isByok,
+      activeProvider: resolved?.provider ?? null,
       projectCount: projectCount ?? 0,
       projectCap: FREE_PROJECT_CAP,
       plan: profile?.plan ?? "free",

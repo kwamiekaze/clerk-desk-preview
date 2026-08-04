@@ -3,9 +3,26 @@
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
 export type Attachment = { url: string; absoluteUrl?: string; mime?: string };
-export type ProviderId = "anthropic" | "openai" | "openrouter" | "gemini" | "kimi";
+export type ProviderId =
+  | "anthropic"
+  | "openai"
+  | "openrouter"
+  | "gemini"
+  | "kimi"
+  | "glm"
+  | "qwen"
+  | "deepseek";
 
-export const PROVIDERS: ProviderId[] = ["openrouter", "openai", "anthropic", "gemini", "kimi"];
+export const PROVIDERS: ProviderId[] = [
+  "openrouter",
+  "openai",
+  "anthropic",
+  "gemini",
+  "kimi",
+  "glm",
+  "qwen",
+  "deepseek",
+];
 
 export const PROVIDER_DEFAULT_MODEL: Record<ProviderId, string> = {
   anthropic: "claude-sonnet-4-5",
@@ -13,6 +30,9 @@ export const PROVIDER_DEFAULT_MODEL: Record<ProviderId, string> = {
   openrouter: "openrouter/auto",
   gemini: "gemini-2.0-flash",
   kimi: "kimi-k3",
+  glm: "glm-4.6",
+  qwen: "qwen-plus",
+  deepseek: "deepseek-v4-flash",
 };
 
 export const PROVIDER_LABEL: Record<ProviderId, string> = {
@@ -21,6 +41,20 @@ export const PROVIDER_LABEL: Record<ProviderId, string> = {
   anthropic: "Anthropic",
   gemini: "Google Gemini",
   kimi: "Kimi (Moonshot AI)",
+  glm: "GLM (Zhipu AI)",
+  qwen: "Qwen (Alibaba)",
+  deepseek: "DeepSeek",
+};
+
+// OpenAI-compatible chat/completions endpoints, per provider.
+const OPENAI_COMPATIBLE_URL: Partial<Record<ProviderId, string>> = {
+  openai: "https://api.openai.com/v1/chat/completions",
+  openrouter: "https://openrouter.ai/api/v1/chat/completions",
+  kimi: "https://api.moonshot.ai/v1/chat/completions",
+  // Zhipu/Z.ai: the path already ends in /v4 — appending /v1 404s here.
+  glm: "https://api.z.ai/api/paas/v4/chat/completions",
+  qwen: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
+  deepseek: "https://api.deepseek.com/chat/completions",
 };
 
 function envKey(provider: ProviderId): { keyName: string; key: string | undefined } {
@@ -35,8 +69,15 @@ function envKey(provider: ProviderId): { keyName: string; key: string | undefine
       return { keyName: "GEMINI_API_KEY", key: process.env.GEMINI_API_KEY };
     case "kimi":
       return { keyName: "KIMI_API_KEY", key: process.env.KIMI_API_KEY };
+    case "glm":
+      return { keyName: "GLM_API_KEY", key: process.env.GLM_API_KEY };
+    case "qwen":
+      return { keyName: "QWEN_API_KEY", key: process.env.QWEN_API_KEY };
+    case "deepseek":
+      return { keyName: "DEEPSEEK_API_KEY", key: process.env.DEEPSEEK_API_KEY };
   }
 }
+
 
 export function platformFallbackAvailable(): boolean {
   const p = (process.env.AI_PROVIDER || "").toLowerCase() as ProviderId;
@@ -63,6 +104,16 @@ async function fetchImageBase64(url: string): Promise<{ b64: string; mime: strin
   } catch { return null; }
 }
 
+export type ProviderResult = {
+  text: string;
+  inputTokens: number;
+  outputTokens: number;
+};
+
+function num(v: unknown): number {
+  return typeof v === "number" && Number.isFinite(v) ? v : 0;
+}
+
 export async function callProvider(
   provider: ProviderId,
   apiKey: string,
@@ -70,7 +121,7 @@ export async function callProvider(
   system: string,
   messages: ChatMessage[],
   opts?: { attachments?: Attachment[]; maxTokens?: number },
-): Promise<string> {
+): Promise<ProviderResult> {
   const atts = opts?.attachments ?? [];
   // Raise ceilings for providers that comfortably handle it; keep others at 16k.
   const defaultMax =
@@ -118,10 +169,14 @@ export async function callProvider(
     });
     if (!resp.ok) throw new Error(await readError(resp));
     const j = await resp.json();
-    return (j.content || [])
-      .filter((b: { type: string }) => b.type === "text")
-      .map((b: { text: string }) => b.text)
-      .join("");
+    return {
+      text: (j.content || [])
+        .filter((b: { type: string }) => b.type === "text")
+        .map((b: { text: string }) => b.text)
+        .join(""),
+      inputTokens: num(j?.usage?.input_tokens),
+      outputTokens: num(j?.usage?.output_tokens),
+    };
   }
 
   const augmented = messages.slice();
@@ -131,14 +186,9 @@ export async function callProvider(
     augmented[augmented.length - 1] = { ...last, content: last.content + "\n\n" + lines };
   }
 
-  if (provider === "openai" || provider === "openrouter" || provider === "kimi") {
-    const url =
-      provider === "openai"
-        ? "https://api.openai.com/v1/chat/completions"
-        : provider === "openrouter"
-          ? "https://openrouter.ai/api/v1/chat/completions"
-          : "https://api.moonshot.ai/v1/chat/completions";
-    const resp = await fetch(url, {
+  const compatUrl = OPENAI_COMPATIBLE_URL[provider];
+  if (compatUrl) {
+    const resp = await fetch(compatUrl, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -152,7 +202,11 @@ export async function callProvider(
     });
     if (!resp.ok) throw new Error(await readError(resp));
     const j = await resp.json();
-    return j.choices?.[0]?.message?.content ?? "";
+    return {
+      text: j.choices?.[0]?.message?.content ?? "",
+      inputTokens: num(j?.usage?.prompt_tokens),
+      outputTokens: num(j?.usage?.completion_tokens),
+    };
   }
 
   if (provider === "gemini") {
@@ -172,9 +226,13 @@ export async function callProvider(
     });
     if (!resp.ok) throw new Error(await readError(resp));
     const j = await resp.json();
-    return (j.candidates?.[0]?.content?.parts || [])
-      .map((p: { text?: string }) => p.text || "")
-      .join("");
+    return {
+      text: (j.candidates?.[0]?.content?.parts || [])
+        .map((p: { text?: string }) => p.text || "")
+        .join(""),
+      inputTokens: num(j?.usageMetadata?.promptTokenCount),
+      outputTokens: num(j?.usageMetadata?.candidatesTokenCount),
+    };
   }
 
   throw new Error(`Unknown provider "${provider}"`);
@@ -257,7 +315,7 @@ export async function generateText(
     | string
     | { supabase: import("@supabase/supabase-js").SupabaseClient; userId: string; attachments?: Attachment[] },
   legacyOpts?: { attachments?: Attachment[] },
-): Promise<string> {
+): Promise<ProviderResult & { isPlatformFallback: boolean }> {
   // Support both call shapes so existing helpers keep compiling; projects.functions.ts uses the object form.
   let supabase: import("@supabase/supabase-js").SupabaseClient | null = null;
   let userId: string | null = null;
@@ -277,7 +335,8 @@ export async function generateText(
   if (!resolved) {
     throw new Error("NO_KEY_CONFIGURED: Add an API key in Settings → API Keys to start building.");
   }
-  return callProvider(resolved.provider, resolved.apiKey, resolved.model, system, messages, { attachments });
+  const out = await callProvider(resolved.provider, resolved.apiKey, resolved.model, system, messages, { attachments });
+  return { ...out, isPlatformFallback: resolved.isPlatformFallback };
 }
 
 // ---- Tolerant JSON parser + file sanitization ----
@@ -341,10 +400,23 @@ TECHNICAL RULES for every file:
 - Every page must be responsive, polished, and complete — real copy, no lorem ipsum, no TODO comments, no broken references.
 - Keep total output under roughly 1800 lines so nothing is cut off. One excellent page beats four thin ones.
 
-MOTION QUALITY BAR — this platform's signature is award-show-caliber motion (motionsites.ai / Awwwards tier). Unless the user explicitly asks for something plain or minimal, EVERY generated site should include:
-- A deliberate entrance animation on load (staggered hero reveal, mask/curtain wipe, or letter-by-letter type-in).
-- Scroll-triggered reveals throughout the page — IntersectionObserver for lighter builds, GSAP ScrollTrigger for anything cinematic (pinned sections, parallax layers, horizontal scroll galleries, timeline reveals).
-- Interaction polish: magnetic buttons, hover/cursor-aware transforms, subtle inertia, custom cursor accents, or animated underlines. Ship the site as a piece of interactive design, not a static page.
+DESIGN DIRECTION — the difference between a generic AI site and a real one:
+
+1. GROUND IT IN THE SUBJECT FIRST. Before writing a single file, privately settle three questions: what exactly is this, who is it for, and what is the one job this page has to do. Every distinctive choice — palette, type, layout, imagery, motion — must be derived from that subject's own world, not from a generic template.
+
+2. AVOID THE THREE DEFAULTS every AI-generated site clusters around. Do not produce:
+   (a) a warm cream background with a high-contrast serif and a terracotta/clay accent;
+   (b) a near-black background with one bright neon accent color;
+   (c) a broadsheet layout with hairline rules and zero border-radius.
+   Also: do NOT default to CodingClerks' own Matrix green-on-black identity for a generated site just because it is the platform's look. That is our brand, not a template to stamp onto every user's project. Derive the palette from their subject instead.
+
+3. PLAN BEFORE BUILDING, silently. Sketch a compact token system: 4 to 6 named hex colors, two typefaces with distinct roles (a display face and a body face), and one signature element the page will be remembered by — grounded in this specific brief. Check that it does not match the defaults above; if it does, revise before writing any file.
+
+4. MOTION IS A DELIBERATE CHOICE, NOT A CHECKLIST. One well-orchestrated moment — a considered entrance sequence, a single scroll-triggered set-piece — usually lands harder than scattering effects everywhere; scattered motion reads as AI-generated. GSAP, ScrollTrigger, and Lenis via CDN remain available tools: use them where the subject calls for it, and skip them where restraint serves the page better.
+
+5. REAL, SPECIFIC COPY. Write from the visitor's side of the screen: plain, concrete, particular to this subject. Never placeholder-feeling filler.
+
+QUALITY FLOOR regardless of style: responsive down to mobile, visible keyboard focus states, and prefers-reduced-motion respected for every animation.
 `;
 
 export const SYSTEM_GENERATE =
