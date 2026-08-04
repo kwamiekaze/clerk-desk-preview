@@ -8,6 +8,7 @@ import { ArrowLeft, Send, Loader2, Trash2, RefreshCw, FileCode2, ExternalLink, P
 import { MicButton } from "@/components/ui/MicButton";
 import { ImageAttachments, type UploadedImage } from "@/components/upload/ImageAttachments";
 import { CompilingOverlay } from "@/components/fx/CompilingOverlay";
+import { CustomDomainPanel } from "@/components/builder/CustomDomainPanel";
 
 export const Route = createFileRoute("/app/projects/$id")({
   head: () => ({ meta: [{ title: "Project — CodingClerks" }] }),
