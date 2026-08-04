@@ -3,9 +3,26 @@
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
 export type Attachment = { url: string; absoluteUrl?: string; mime?: string };
-export type ProviderId = "anthropic" | "openai" | "openrouter" | "gemini" | "kimi";
+export type ProviderId =
+  | "anthropic"
+  | "openai"
+  | "openrouter"
+  | "gemini"
+  | "kimi"
+  | "glm"
+  | "qwen"
+  | "deepseek";
 
-export const PROVIDERS: ProviderId[] = ["openrouter", "openai", "anthropic", "gemini", "kimi"];
+export const PROVIDERS: ProviderId[] = [
+  "openrouter",
+  "openai",
+  "anthropic",
+  "gemini",
+  "kimi",
+  "glm",
+  "qwen",
+  "deepseek",
+];
 
 export const PROVIDER_DEFAULT_MODEL: Record<ProviderId, string> = {
   anthropic: "claude-sonnet-4-5",
@@ -13,6 +30,9 @@ export const PROVIDER_DEFAULT_MODEL: Record<ProviderId, string> = {
   openrouter: "openrouter/auto",
   gemini: "gemini-2.0-flash",
   kimi: "kimi-k3",
+  glm: "glm-4.6",
+  qwen: "qwen-plus",
+  deepseek: "deepseek-v4-flash",
 };
 
 export const PROVIDER_LABEL: Record<ProviderId, string> = {
@@ -21,6 +41,20 @@ export const PROVIDER_LABEL: Record<ProviderId, string> = {
   anthropic: "Anthropic",
   gemini: "Google Gemini",
   kimi: "Kimi (Moonshot AI)",
+  glm: "GLM (Zhipu AI)",
+  qwen: "Qwen (Alibaba)",
+  deepseek: "DeepSeek",
+};
+
+// OpenAI-compatible chat/completions endpoints, per provider.
+const OPENAI_COMPATIBLE_URL: Partial<Record<ProviderId, string>> = {
+  openai: "https://api.openai.com/v1/chat/completions",
+  openrouter: "https://openrouter.ai/api/v1/chat/completions",
+  kimi: "https://api.moonshot.ai/v1/chat/completions",
+  // Zhipu/Z.ai: the path already ends in /v4 — appending /v1 404s here.
+  glm: "https://api.z.ai/api/paas/v4/chat/completions",
+  qwen: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
+  deepseek: "https://api.deepseek.com/chat/completions",
 };
 
 function envKey(provider: ProviderId): { keyName: string; key: string | undefined } {
@@ -35,8 +69,15 @@ function envKey(provider: ProviderId): { keyName: string; key: string | undefine
       return { keyName: "GEMINI_API_KEY", key: process.env.GEMINI_API_KEY };
     case "kimi":
       return { keyName: "KIMI_API_KEY", key: process.env.KIMI_API_KEY };
+    case "glm":
+      return { keyName: "GLM_API_KEY", key: process.env.GLM_API_KEY };
+    case "qwen":
+      return { keyName: "QWEN_API_KEY", key: process.env.QWEN_API_KEY };
+    case "deepseek":
+      return { keyName: "DEEPSEEK_API_KEY", key: process.env.DEEPSEEK_API_KEY };
   }
 }
+
 
 export function platformFallbackAvailable(): boolean {
   const p = (process.env.AI_PROVIDER || "").toLowerCase() as ProviderId;
