@@ -14,11 +14,46 @@ import {
 } from "./provider.server";
 
 const FREE_PROJECT_CAP = 10;
-const FREE_MONTHLY_GENERATE_CAP = 25;
+/** Daily token budget for users building on the platform's shared AI key. BYOK users are uncapped. */
+export const FREE_DAILY_TOKENS = 60000;
 
 const AttachmentSchema = z.array(
   z.object({ path: z.string().max(500), url: z.string().max(1200) }),
 ).max(4).optional();
+
+function utcMidnightIso(): string {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString();
+}
+
+async function platformTokensUsedToday(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  userId: string,
+): Promise<number> {
+  const { data } = await supabase
+    .from("usage_events")
+    .select("tokens_used")
+    .eq("user_id", userId)
+    .eq("is_platform_fallback", true)
+    .gte("created_at", utcMidnightIso());
+  return (data ?? []).reduce((sum, r) => sum + (r.tokens_used ?? 0), 0);
+}
+
+async function logUsage(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  userId: string,
+  projectId: string,
+  kind: "generate" | "edit" | "clone",
+  result: { inputTokens: number; outputTokens: number; isPlatformFallback: boolean },
+) {
+  await supabase.from("usage_events").insert({
+    user_id: userId,
+    project_id: projectId,
+    kind,
+    tokens_used: (result.inputTokens ?? 0) + (result.outputTokens ?? 0),
+    is_platform_fallback: result.isPlatformFallback,
+  });
+}
 
 async function enforceFreePlanLimits(
   supabase: import("@supabase/supabase-js").SupabaseClient,
@@ -36,15 +71,11 @@ async function enforceFreePlanLimits(
     throw new Error(`Free plan is limited to ${FREE_PROJECT_CAP} projects. Upgrade to Pro to build more.`);
   }
 
-  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-  const { count: uc } = await supabase
-    .from("usage_events")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .in("kind", ["generate", "clone"])
-    .gte("created_at", since);
-  if ((uc ?? 0) >= FREE_MONTHLY_GENERATE_CAP) {
-    throw new Error(`Free plan is limited to ${FREE_MONTHLY_GENERATE_CAP} builds per 30 days. Upgrade to Pro for unlimited.`);
+  const used = await platformTokensUsedToday(supabase, userId);
+  if (used >= FREE_DAILY_TOKENS) {
+    throw new Error(
+      `Daily free limit reached (${FREE_DAILY_TOKENS.toLocaleString()} tokens). It resets at midnight UTC — or add your own API key in Settings for unlimited builds.`,
+    );
   }
   void action;
 }
