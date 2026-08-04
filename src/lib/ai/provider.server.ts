@@ -226,9 +226,13 @@ export async function callProvider(
     });
     if (!resp.ok) throw new Error(await readError(resp));
     const j = await resp.json();
-    return (j.candidates?.[0]?.content?.parts || [])
-      .map((p: { text?: string }) => p.text || "")
-      .join("");
+    return {
+      text: (j.candidates?.[0]?.content?.parts || [])
+        .map((p: { text?: string }) => p.text || "")
+        .join(""),
+      inputTokens: num(j?.usageMetadata?.promptTokenCount),
+      outputTokens: num(j?.usageMetadata?.candidatesTokenCount),
+    };
   }
 
   throw new Error(`Unknown provider "${provider}"`);
