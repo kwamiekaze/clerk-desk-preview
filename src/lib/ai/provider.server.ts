@@ -186,14 +186,9 @@ export async function callProvider(
     augmented[augmented.length - 1] = { ...last, content: last.content + "\n\n" + lines };
   }
 
-  if (provider === "openai" || provider === "openrouter" || provider === "kimi") {
-    const url =
-      provider === "openai"
-        ? "https://api.openai.com/v1/chat/completions"
-        : provider === "openrouter"
-          ? "https://openrouter.ai/api/v1/chat/completions"
-          : "https://api.moonshot.ai/v1/chat/completions";
-    const resp = await fetch(url, {
+  const compatUrl = OPENAI_COMPATIBLE_URL[provider];
+  if (compatUrl) {
+    const resp = await fetch(compatUrl, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -207,7 +202,11 @@ export async function callProvider(
     });
     if (!resp.ok) throw new Error(await readError(resp));
     const j = await resp.json();
-    return j.choices?.[0]?.message?.content ?? "";
+    return {
+      text: j.choices?.[0]?.message?.content ?? "",
+      inputTokens: num(j?.usage?.prompt_tokens),
+      outputTokens: num(j?.usage?.completion_tokens),
+    };
   }
 
   if (provider === "gemini") {
