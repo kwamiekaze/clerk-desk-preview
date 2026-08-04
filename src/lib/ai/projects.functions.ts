@@ -295,7 +295,7 @@ export const cloneProject = createServerFn({ method: "POST" })
     const scraped = await fetchSiteContent(data.url);
     const atts = toAttachments(data.attachments, requestOrigin());
 
-    const raw = await generateText(
+    const out = await generateText(
       SYSTEM_CLONE,
       [
         {
@@ -306,7 +306,7 @@ export const cloneProject = createServerFn({ method: "POST" })
       ],
       { supabase: context.supabase, userId: context.userId, attachments: atts },
     );
-    const parsed = parseModelJson(raw);
+    const parsed = parseModelJson(out.text);
 
     const { data: proj, error: pe } = await context.supabase
       .from("projects")
@@ -325,11 +325,7 @@ export const cloneProject = createServerFn({ method: "POST" })
       { project_id: proj.id, role: "user", content: `Clone ${data.url}` + (data.notes ? "\n\n" + data.notes : "") },
       { project_id: proj.id, role: "assistant", content: parsed.summary },
     ]);
-    await context.supabase.from("usage_events").insert({
-      user_id: context.userId,
-      project_id: proj.id,
-      kind: "clone",
-    });
+    await logUsage(context.supabase, context.userId, proj.id, "clone", out);
     return { id: proj.id };
   });
 
