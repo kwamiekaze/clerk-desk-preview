@@ -104,6 +104,16 @@ async function fetchImageBase64(url: string): Promise<{ b64: string; mime: strin
   } catch { return null; }
 }
 
+export type ProviderResult = {
+  text: string;
+  inputTokens: number;
+  outputTokens: number;
+};
+
+function num(v: unknown): number {
+  return typeof v === "number" && Number.isFinite(v) ? v : 0;
+}
+
 export async function callProvider(
   provider: ProviderId,
   apiKey: string,
@@ -111,7 +121,7 @@ export async function callProvider(
   system: string,
   messages: ChatMessage[],
   opts?: { attachments?: Attachment[]; maxTokens?: number },
-): Promise<string> {
+): Promise<ProviderResult> {
   const atts = opts?.attachments ?? [];
   // Raise ceilings for providers that comfortably handle it; keep others at 16k.
   const defaultMax =
