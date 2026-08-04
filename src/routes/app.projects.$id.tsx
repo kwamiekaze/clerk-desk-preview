@@ -294,6 +294,12 @@ function ProjectWorkspace() {
         </section>
       </div>
 
+      <div className="px-3 pb-6 sm:px-4">
+        <CustomDomainPanel projectId={id} slug={site?.slug ?? null} />
+      </div>
+
+
+
       {showPublish && (
         <PublishDialog
           projectTitle={project.title}
