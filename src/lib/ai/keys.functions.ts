@@ -10,7 +10,16 @@ import {
   type ProviderId,
 } from "./provider.server";
 
-const ProviderEnum = z.enum(["openrouter", "openai", "anthropic", "gemini", "kimi"]);
+const ProviderEnum = z.enum([
+  "openrouter",
+  "openai",
+  "anthropic",
+  "gemini",
+  "kimi",
+  "glm",
+  "qwen",
+  "deepseek",
+]);
 
 export type KeyStatus = {
   provider: ProviderId;
