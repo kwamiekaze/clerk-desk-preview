@@ -99,30 +99,30 @@ export const addDomain = createServerFn({ method: "POST" })
     let note: string | null = null;
 
     if (data.mode === "cname") {
-      if (env) {
-        try {
-          const result = await cf(
-            `/zones/${env.zoneId}/custom_hostnames`,
-            {
-              method: "POST",
-              body: JSON.stringify({
-                hostname: data.domain,
-                ssl: { method: "http", type: "dv", settings: { min_tls_version: "1.2" } },
-              }),
-            },
-            env.token,
-          );
-          hostnameId = typeof result.id === "string" ? result.id : null;
-          cnameTarget = appHost();
-          note =
-            "Add a CNAME record at your registrar pointing this hostname at the target below. In this MVP, full custom domains work for subdomains (e.g. www.example.com); for an apex/root domain, use your registrar's own \u201cforward apex to www\u201d rule plus this CNAME on the www record.";
-        } catch (e) {
-          status = "error";
-          errorMessage = (e as Error).message.slice(0, 400);
-        }
-      } else {
+      if (!env) {
+        throw new Error(
+          "Full custom domains (CNAME) require a Cloudflare for SaaS paid plan and Cloudflare API credentials. Use Quick redirect instead, or contact support to enable full custom domains."
+        );
+      }
+      try {
+        const result = await cf(
+          `/zones/${env.zoneId}/custom_hostnames`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              hostname: data.domain,
+              ssl: { method: "http", type: "dv", settings: { min_tls_version: "1.2" } },
+            }),
+          },
+          env.token,
+        );
+        hostnameId = typeof result.id === "string" ? result.id : null;
+        cnameTarget = appHost();
         note =
-          "Full custom-domain support isn't active on this deployment yet. Your domain is saved as pending \u2014 in the meantime you can use the quick redirect option, which works today.";
+          "Add a CNAME record at your registrar pointing this hostname at the target below. In this MVP, full custom domains work for subdomains (e.g. www.example.com); for an apex/root domain, use your registrar's own \u201cforward apex to www\u201d rule plus this CNAME on the www record.";
+      } catch (e) {
+        status = "error";
+        errorMessage = (e as Error).message.slice(0, 400);
       }
     }
 
