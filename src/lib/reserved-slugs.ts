@@ -2,7 +2,7 @@ export const RESERVED_SLUGS = new Set([
   "app", "auth", "api", "admin", "login", "signup", "settings", "profile",
   "p", "u", "assets", "static", "pricing", "terms", "privacy",
   "favicon.ico", "robots.txt", "sitemap.xml", "reset-password",
-  "billing", "checkout", "public", "docs",
+  "billing", "checkout", "public", "docs", "sonnygames",
 ]);
 
 export const SLUG_REGEX = /^[a-z0-9-]{3,40}$/;

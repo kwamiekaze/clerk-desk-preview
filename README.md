@@ -1,5 +1,10 @@
 # CodingClerks Launchpad
 
+## Included apps
+
+- **Sonny Games** is mounted at `/sonnygames`. Its source is vendored in
+  `apps/sonnygames` from `kwamiekaze/sonnygames` using a Git subtree.
+
 Create Phase 1 of CodingClerks, a premium agentic SaaS web app builder.
 
 Only implement the brand system, shared marketing components, and public landing page. Do not build backend integrations.

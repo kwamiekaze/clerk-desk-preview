@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SonnygamesRouteImport } from './routes/sonnygames'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -38,6 +39,11 @@ import { Route as AppBillingInvoicesRouteImport } from './routes/app.billing.inv
 import { Route as ApiPublicPreviewIdSplatRouteImport } from './routes/api/public/preview.$id.$'
 import { Route as ApiPublicImgBucketSplatRouteImport } from './routes/api/public/img.$bucket.$'
 
+const SonnygamesRoute = SonnygamesRouteImport.update({
+  id: '/sonnygames',
+  path: '/sonnygames',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sonnygames': typeof SonnygamesRoute
   '/$slug/$': typeof SlugSplatRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/policy': typeof AdminPolicyRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sonnygames': typeof SonnygamesRoute
   '/$slug/$': typeof SlugSplatRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/policy': typeof AdminPolicyRoute
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sonnygames': typeof SonnygamesRoute
   '/$slug/$': typeof SlugSplatRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/policy': typeof AdminPolicyRoute
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/pricing'
     | '/reset-password'
+    | '/sonnygames'
     | '/$slug/$'
     | '/admin/audit'
     | '/admin/policy'
@@ -305,6 +315,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/pricing'
     | '/reset-password'
+    | '/sonnygames'
     | '/$slug/$'
     | '/admin/audit'
     | '/admin/policy'
@@ -334,6 +345,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/pricing'
     | '/reset-password'
+    | '/sonnygames'
     | '/$slug/$'
     | '/admin/audit'
     | '/admin/policy'
@@ -365,6 +377,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   PricingRoute: typeof PricingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SonnygamesRoute: typeof SonnygamesRoute
   BillingCancelRoute: typeof BillingCancelRoute
   BillingSuccessRoute: typeof BillingSuccessRoute
   CheckoutSessionRoute: typeof CheckoutSessionRoute
@@ -374,6 +387,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sonnygames': {
+      id: '/sonnygames'
+      path: '/sonnygames'
+      fullPath: '/sonnygames'
+      preLoaderRoute: typeof SonnygamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -647,6 +667,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   PricingRoute: PricingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SonnygamesRoute: SonnygamesRoute,
   BillingCancelRoute: BillingCancelRoute,
   BillingSuccessRoute: BillingSuccessRoute,
   CheckoutSessionRoute: CheckoutSessionRoute,
@@ -656,3 +677,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
