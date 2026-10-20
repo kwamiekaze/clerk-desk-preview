@@ -7,7 +7,10 @@ export function SonnyGamesFrame() {
         title="Sonny's Games"
         src={SONNY_GAMES_ORIGIN}
         className="h-full w-full border-0"
-        allow="autoplay; fullscreen"
+        // Explicitly delegate playback to the cross-origin game so Web Audio can leave its
+        // browser-imposed suspended state after the player's first tap.
+        allow="autoplay *; fullscreen *"
+        allowFullScreen
         referrerPolicy="strict-origin-when-cross-origin"
       />
       <noscript>
