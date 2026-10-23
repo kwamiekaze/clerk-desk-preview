@@ -9,64 +9,39 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SonnygamesRouteImport } from './routes/sonnygames'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AppRouteImport } from './routes/app'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as SlugRouteImport } from './routes/$slug'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppIndexRouteImport } from './routes/app.index'
-import { Route as AdminIndexRouteImport } from './routes/admin.index'
-import { Route as CheckoutSessionRouteImport } from './routes/checkout.$session'
-import { Route as BillingSuccessRouteImport } from './routes/billing.success'
-import { Route as BillingCancelRouteImport } from './routes/billing.cancel'
-import { Route as AppSettingsRouteImport } from './routes/app.settings'
-import { Route as AppBillingRouteImport } from './routes/app.billing'
-import { Route as AppAdminRouteImport } from './routes/app.admin'
-import { Route as AdminUsersRouteImport } from './routes/admin.users'
-import { Route as AdminPolicyRouteImport } from './routes/admin.policy'
-import { Route as AdminAuditRouteImport } from './routes/admin.audit'
+import { Route as SlugRouteImport } from './routes/$slug'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AppRouteImport } from './routes/app'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SonnygamesRouteImport } from './routes/sonnygames'
 import { Route as SlugSplatRouteImport } from './routes/$slug.$'
-import { Route as AppProjectsIndexRouteImport } from './routes/app.projects.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
+import { Route as AdminPolicyRouteImport } from './routes/admin.policy'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppAdminRouteImport } from './routes/app.admin'
+import { Route as AppBillingRouteImport } from './routes/app.billing'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as BillingCancelRouteImport } from './routes/billing.cancel'
+import { Route as BillingSuccessRouteImport } from './routes/billing.success'
+import { Route as CheckoutSessionRouteImport } from './routes/checkout.$session'
 import { Route as AppBillingIndexRouteImport } from './routes/app.billing.index'
-import { Route as AppProjectsNewRouteImport } from './routes/app.projects.new'
-import { Route as AppProjectsIdRouteImport } from './routes/app.projects.$id'
-import { Route as AppBillingUsageRouteImport } from './routes/app.billing.usage'
-import { Route as AppBillingMembersRouteImport } from './routes/app.billing.members'
 import { Route as AppBillingInvoicesRouteImport } from './routes/app.billing.invoices'
-import { Route as ApiPublicPreviewIdSplatRouteImport } from './routes/api/public/preview.$id.$'
+import { Route as AppBillingMembersRouteImport } from './routes/app.billing.members'
+import { Route as AppBillingUsageRouteImport } from './routes/app.billing.usage'
+import { Route as AppProjectsIndexRouteImport } from './routes/app.projects.index'
+import { Route as AppProjectsIdRouteImport } from './routes/app.projects.$id'
+import { Route as AppProjectsNewRouteImport } from './routes/app.projects.new'
 import { Route as ApiPublicImgBucketSplatRouteImport } from './routes/api/public/img.$bucket.$'
+import { Route as ApiPublicPreviewIdSplatRouteImport } from './routes/api/public/preview.$id.$'
 
-const SonnygamesRoute = SonnygamesRouteImport.update({
-  id: '/sonnygames',
-  path: '/sonnygames',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PricingRoute = PricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppRoute = AppRouteImport.update({
-  id: '/app',
-  path: '/app',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SlugRoute = SlugRouteImport.update({
@@ -74,59 +49,44 @@ const SlugRoute = SlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppRoute,
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SonnygamesRoute = SonnygamesRouteImport.update({
+  id: '/sonnygames',
+  path: '/sonnygames',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SlugSplatRoute = SlugSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => SlugRoute,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AdminRoute,
-} as any)
-const CheckoutSessionRoute = CheckoutSessionRouteImport.update({
-  id: '/checkout/$session',
-  path: '/checkout/$session',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BillingSuccessRoute = BillingSuccessRouteImport.update({
-  id: '/billing/success',
-  path: '/billing/success',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BillingCancelRoute = BillingCancelRouteImport.update({
-  id: '/billing/cancel',
-  path: '/billing/cancel',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppBillingRoute = AppBillingRouteImport.update({
-  id: '/billing',
-  path: '/billing',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminRoute = AppAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AppRoute,
-} as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminPolicyRoute = AdminPolicyRouteImport.update({
-  id: '/policy',
-  path: '/policy',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminAuditRoute = AdminAuditRouteImport.update({
@@ -134,39 +94,54 @@ const AdminAuditRoute = AdminAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AdminRoute,
 } as any)
-const SlugSplatRoute = SlugSplatRouteImport.update({
-  id: '/$',
-  path: '/$',
-  getParentRoute: () => SlugRoute,
+const AdminPolicyRoute = AdminPolicyRouteImport.update({
+  id: '/policy',
+  path: '/policy',
+  getParentRoute: () => AdminRoute,
 } as any)
-const AppProjectsIndexRoute = AppProjectsIndexRouteImport.update({
-  id: '/projects/',
-  path: '/projects/',
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBillingRoute = AppBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const BillingCancelRoute = BillingCancelRouteImport.update({
+  id: '/billing/cancel',
+  path: '/billing/cancel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BillingSuccessRoute = BillingSuccessRouteImport.update({
+  id: '/billing/success',
+  path: '/billing/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutSessionRoute = CheckoutSessionRouteImport.update({
+  id: '/checkout/$session',
+  path: '/checkout/$session',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppBillingIndexRoute = AppBillingIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppBillingRoute,
-} as any)
-const AppProjectsNewRoute = AppProjectsNewRouteImport.update({
-  id: '/projects/new',
-  path: '/projects/new',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProjectsIdRoute = AppProjectsIdRouteImport.update({
-  id: '/projects/$id',
-  path: '/projects/$id',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppBillingUsageRoute = AppBillingUsageRouteImport.update({
-  id: '/usage',
-  path: '/usage',
-  getParentRoute: () => AppBillingRoute,
-} as any)
-const AppBillingMembersRoute = AppBillingMembersRouteImport.update({
-  id: '/members',
-  path: '/members',
   getParentRoute: () => AppBillingRoute,
 } as any)
 const AppBillingInvoicesRoute = AppBillingInvoicesRouteImport.update({
@@ -174,14 +149,39 @@ const AppBillingInvoicesRoute = AppBillingInvoicesRouteImport.update({
   path: '/invoices',
   getParentRoute: () => AppBillingRoute,
 } as any)
-const ApiPublicPreviewIdSplatRoute = ApiPublicPreviewIdSplatRouteImport.update({
-  id: '/api/public/preview/$id/$',
-  path: '/api/public/preview/$id/$',
-  getParentRoute: () => rootRouteImport,
+const AppBillingMembersRoute = AppBillingMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => AppBillingRoute,
+} as any)
+const AppBillingUsageRoute = AppBillingUsageRouteImport.update({
+  id: '/usage',
+  path: '/usage',
+  getParentRoute: () => AppBillingRoute,
+} as any)
+const AppProjectsIndexRoute = AppProjectsIndexRouteImport.update({
+  id: '/projects/',
+  path: '/projects/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProjectsIdRoute = AppProjectsIdRouteImport.update({
+  id: '/projects/$id',
+  path: '/projects/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProjectsNewRoute = AppProjectsNewRouteImport.update({
+  id: '/projects/new',
+  path: '/projects/new',
+  getParentRoute: () => AppRoute,
 } as any)
 const ApiPublicImgBucketSplatRoute = ApiPublicImgBucketSplatRouteImport.update({
   id: '/api/public/img/$bucket/$',
   path: '/api/public/img/$bucket/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPreviewIdSplatRoute = ApiPublicPreviewIdSplatRouteImport.update({
+  id: '/api/public/preview/$id/$',
+  path: '/api/public/preview/$id/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -387,46 +387,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sonnygames': {
-      id: '/sonnygames'
-      path: '/sonnygames'
-      fullPath: '/sonnygames'
-      preLoaderRoute: typeof SonnygamesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pricing': {
-      id: '/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$slug': {
@@ -436,81 +401,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app/': {
-      id: '/app/'
-      path: '/'
-      fullPath: '/app/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sonnygames': {
+      id: '/sonnygames'
+      path: '/sonnygames'
+      fullPath: '/sonnygames'
+      preLoaderRoute: typeof SonnygamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$slug/$': {
+      id: '/$slug/$'
+      path: '/$'
+      fullPath: '/$slug/$'
+      preLoaderRoute: typeof SlugSplatRouteImport
+      parentRoute: typeof SlugRoute
     }
     '/admin/': {
       id: '/admin/'
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/checkout/$session': {
-      id: '/checkout/$session'
-      path: '/checkout/$session'
-      fullPath: '/checkout/$session'
-      preLoaderRoute: typeof CheckoutSessionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/billing/success': {
-      id: '/billing/success'
-      path: '/billing/success'
-      fullPath: '/billing/success'
-      preLoaderRoute: typeof BillingSuccessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/billing/cancel': {
-      id: '/billing/cancel'
-      path: '/billing/cancel'
-      fullPath: '/billing/cancel'
-      preLoaderRoute: typeof BillingCancelRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/settings': {
-      id: '/app/settings'
-      path: '/settings'
-      fullPath: '/app/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/billing': {
-      id: '/app/billing'
-      path: '/billing'
-      fullPath: '/app/billing'
-      preLoaderRoute: typeof AppBillingRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/admin': {
-      id: '/app/admin'
-      path: '/admin'
-      fullPath: '/app/admin'
-      preLoaderRoute: typeof AppAdminRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/admin/users': {
-      id: '/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/policy': {
-      id: '/admin/policy'
-      path: '/policy'
-      fullPath: '/admin/policy'
-      preLoaderRoute: typeof AdminPolicyRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/audit': {
@@ -520,53 +464,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuditRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/$slug/$': {
-      id: '/$slug/$'
-      path: '/$'
-      fullPath: '/$slug/$'
-      preLoaderRoute: typeof SlugSplatRouteImport
-      parentRoute: typeof SlugRoute
+    '/admin/policy': {
+      id: '/admin/policy'
+      path: '/policy'
+      fullPath: '/admin/policy'
+      preLoaderRoute: typeof AdminPolicyRouteImport
+      parentRoute: typeof AdminRoute
     }
-    '/app/projects/': {
-      id: '/app/projects/'
-      path: '/projects'
-      fullPath: '/app/projects/'
-      preLoaderRoute: typeof AppProjectsIndexRouteImport
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/app/admin': {
+      id: '/app/admin'
+      path: '/admin'
+      fullPath: '/app/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/billing': {
+      id: '/app/billing'
+      path: '/billing'
+      fullPath: '/app/billing'
+      preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/billing/cancel': {
+      id: '/billing/cancel'
+      path: '/billing/cancel'
+      fullPath: '/billing/cancel'
+      preLoaderRoute: typeof BillingCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/billing/success': {
+      id: '/billing/success'
+      path: '/billing/success'
+      fullPath: '/billing/success'
+      preLoaderRoute: typeof BillingSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/$session': {
+      id: '/checkout/$session'
+      path: '/checkout/$session'
+      fullPath: '/checkout/$session'
+      preLoaderRoute: typeof CheckoutSessionRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/app/billing/': {
       id: '/app/billing/'
       path: '/'
       fullPath: '/app/billing/'
       preLoaderRoute: typeof AppBillingIndexRouteImport
-      parentRoute: typeof AppBillingRoute
-    }
-    '/app/projects/new': {
-      id: '/app/projects/new'
-      path: '/projects/new'
-      fullPath: '/app/projects/new'
-      preLoaderRoute: typeof AppProjectsNewRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/projects/$id': {
-      id: '/app/projects/$id'
-      path: '/projects/$id'
-      fullPath: '/app/projects/$id'
-      preLoaderRoute: typeof AppProjectsIdRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/billing/usage': {
-      id: '/app/billing/usage'
-      path: '/usage'
-      fullPath: '/app/billing/usage'
-      preLoaderRoute: typeof AppBillingUsageRouteImport
-      parentRoute: typeof AppBillingRoute
-    }
-    '/app/billing/members': {
-      id: '/app/billing/members'
-      path: '/members'
-      fullPath: '/app/billing/members'
-      preLoaderRoute: typeof AppBillingMembersRouteImport
       parentRoute: typeof AppBillingRoute
     }
     '/app/billing/invoices': {
@@ -576,18 +541,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBillingInvoicesRouteImport
       parentRoute: typeof AppBillingRoute
     }
-    '/api/public/preview/$id/$': {
-      id: '/api/public/preview/$id/$'
-      path: '/api/public/preview/$id/$'
-      fullPath: '/api/public/preview/$id/$'
-      preLoaderRoute: typeof ApiPublicPreviewIdSplatRouteImport
-      parentRoute: typeof rootRouteImport
+    '/app/billing/members': {
+      id: '/app/billing/members'
+      path: '/members'
+      fullPath: '/app/billing/members'
+      preLoaderRoute: typeof AppBillingMembersRouteImport
+      parentRoute: typeof AppBillingRoute
+    }
+    '/app/billing/usage': {
+      id: '/app/billing/usage'
+      path: '/usage'
+      fullPath: '/app/billing/usage'
+      preLoaderRoute: typeof AppBillingUsageRouteImport
+      parentRoute: typeof AppBillingRoute
+    }
+    '/app/projects/': {
+      id: '/app/projects/'
+      path: '/projects'
+      fullPath: '/app/projects/'
+      preLoaderRoute: typeof AppProjectsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/projects/$id': {
+      id: '/app/projects/$id'
+      path: '/projects/$id'
+      fullPath: '/app/projects/$id'
+      preLoaderRoute: typeof AppProjectsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/projects/new': {
+      id: '/app/projects/new'
+      path: '/projects/new'
+      fullPath: '/app/projects/new'
+      preLoaderRoute: typeof AppProjectsNewRouteImport
+      parentRoute: typeof AppRoute
     }
     '/api/public/img/$bucket/$': {
       id: '/api/public/img/$bucket/$'
       path: '/api/public/img/$bucket/$'
       fullPath: '/api/public/img/$bucket/$'
       preLoaderRoute: typeof ApiPublicImgBucketSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/preview/$id/$': {
+      id: '/api/public/preview/$id/$'
+      path: '/api/public/preview/$id/$'
+      fullPath: '/api/public/preview/$id/$'
+      preLoaderRoute: typeof ApiPublicPreviewIdSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
   }

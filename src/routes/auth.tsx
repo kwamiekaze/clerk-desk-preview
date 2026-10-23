@@ -8,7 +8,7 @@ import { MatrixRain } from "@/components/fx/MatrixRain";
 type Mode = "signin" | "signup";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (s: Record<string, unknown>): { mode?: Mode } => ({
     mode: (s.mode === "signup" ? "signup" : "signin") as Mode,
   }),
   head: () => ({ meta: [{ title: "Sign in — CodingClerks" }] }),
