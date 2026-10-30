@@ -4,6 +4,8 @@
 
 - **Sonny Games** is mounted at `/sonnygames`. Its source is vendored in
   `apps/sonnygames` from `kwamiekaze/sonnygames` using a Git subtree.
+- **Gary's Garage** is mounted at `/garysgarage`. Its source is vendored in
+  `apps/garysgarage` from `kwamiekaze/garys-garage` using a Git subtree.
 
 Create Phase 1 of CodingClerks, a premium agentic SaaS web app builder.
 
