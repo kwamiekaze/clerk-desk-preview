@@ -15,6 +15,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as GarysgarageRouteImport } from './routes/garysgarage'
+import { Route as WarrencoRouteImport } from './routes/warrenco'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SonnygamesRouteImport } from './routes/sonnygames'
@@ -68,6 +69,11 @@ const AuthRoute = AuthRouteImport.update({
 const GarysgarageRoute = GarysgarageRouteImport.update({
   id: '/garysgarage',
   path: '/garysgarage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WarrencoRoute = WarrencoRouteImport.update({
+  id: '/warrenco',
+  path: '/warrenco',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/garysgarage': typeof GarysgarageRoute
+  '/warrenco': typeof WarrencoRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sonnygames': typeof SonnygamesRoute
@@ -228,6 +235,7 @@ export interface FileRoutesByTo {
   '/$slug': typeof SlugRouteWithChildren
   '/auth': typeof AuthRoute
   '/garysgarage': typeof GarysgarageRoute
+  '/warrenco': typeof WarrencoRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sonnygames': typeof SonnygamesRoute
@@ -260,6 +268,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/garysgarage': typeof GarysgarageRoute
+  '/warrenco': typeof WarrencoRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sonnygames': typeof SonnygamesRoute
@@ -294,6 +303,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/garysgarage'
+    | '/warrenco'
     | '/pricing'
     | '/reset-password'
     | '/sonnygames'
@@ -324,6 +334,7 @@ export interface FileRouteTypes {
     | '/$slug'
     | '/auth'
     | '/garysgarage'
+    | '/warrenco'
     | '/pricing'
     | '/reset-password'
     | '/sonnygames'
@@ -355,6 +366,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/garysgarage'
+    | '/warrenco'
     | '/pricing'
     | '/reset-password'
     | '/sonnygames'
@@ -388,6 +400,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
   GarysgarageRoute: typeof GarysgarageRoute
+  WarrencoRoute: typeof WarrencoRoute
   PricingRoute: typeof PricingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SonnygamesRoute: typeof SonnygamesRoute
@@ -440,6 +453,13 @@ declare module '@tanstack/react-router' {
       path: '/garysgarage'
       fullPath: '/garysgarage'
       preLoaderRoute: typeof GarysgarageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/warrenco': {
+      id: '/warrenco'
+      path: '/warrenco'
+      fullPath: '/warrenco'
+      preLoaderRoute: typeof WarrencoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -686,6 +706,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
   GarysgarageRoute: GarysgarageRoute,
+  WarrencoRoute: WarrencoRoute,
   PricingRoute: PricingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SonnygamesRoute: SonnygamesRoute,
