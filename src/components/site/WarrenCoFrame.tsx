@@ -1,4 +1,4 @@
-const WARREN_CO_ORIGIN = "https://tailored-brand-launchpad.lovable.app";
+const WARREN_CO_ORIGIN = "https://warren-co.lovable.app";
 
 export function WarrenCoFrame() {
   return (

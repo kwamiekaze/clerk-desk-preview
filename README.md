@@ -5,7 +5,7 @@
 - **Sonny Games** is mounted at `/sonnygames`. Its source is vendored in
   `apps/sonnygames` from `kwamiekaze/sonnygames` using a Git subtree.
 - **Warren Co.** is mounted at `/warrenco` as a full-screen frame of
-  `https://tailored-brand-launchpad.lovable.app` (repo `kwamiekaze/tailored-brand-launchpad`),
+  `https://warren-co.lovable.app` (repo `kwamiekaze/tailored-brand-launchpad`),
   with its own share image and icon in `public/warrenco-*`.
 - **Gary's Garage** is mounted at `/garysgarage`. Its source is vendored in
   `apps/garysgarage` from `kwamiekaze/garys-garage` using a Git subtree.
